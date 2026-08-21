@@ -1,0 +1,19 @@
+lat,long,date,species,catchWeight,vesselId,region
+15.1200,73.0500,2026-03-04T09:00:00Z,Rastrelliger kanagurta (Indian Mackerel),420,IND-GOA-204,Goa shelf
+14.6100,73.4100,2026-03-05T10:30:00Z,Sardinella longiceps (Oil Sardine),286,IND-KAR-118,Karnataka
+16.2200,72.3800,2026-03-06T08:45:00Z,Thunnus albacares (Yellowfin Tuna),980,IND-MH-077,Ratnagiri
+13.8800,74.2100,2026-03-07T11:10:00Z,Rastrelliger kanagurta (Indian Mackerel),615,IND-KAR-221,Mangalore
+12.0400,75.1100,2026-03-08T09:20:00Z,Sardinella longiceps (Oil Sardine),740,IND-KER-054,Kannur
+9.9700,76.1800,2026-03-09T12:00:00Z,Rastrelliger kanagurta (Indian Mackerel),810,IND-KER-088,Kochi
+18.9400,72.6200,2026-03-10T08:15:00Z,Thunnus albacares (Yellowfin Tuna),1120,IND-MH-141,Mumbai coast
+11.2500,79.8500,2026-03-11T09:40:00Z,Sardinella longiceps (Oil Sardine),195,IND-TN-033,Puducherry
+13.2800,80.3400,2026-03-12T10:05:00Z,Rastrelliger kanagurta (Indian Mackerel),355,IND-TN-102,Chennai
+17.6900,83.3200,2026-03-13T08:50:00Z,Thunnus albacares (Yellowfin Tuna),860,IND-AP-061,Visakhapatnam
+19.8000,85.8400,2026-03-14T11:25:00Z,Sardinella longiceps (Oil Sardine),510,IND-OD-019,Puri
+15.4800,81.1200,2026-03-15T09:10:00Z,Rastrelliger kanagurta (Indian Mackerel),470,IND-AP-044,Andhra shelf
+8.4200,77.9800,2026-03-16T12:35:00Z,Sardinella longiceps (Oil Sardine),905,IND-TN-210,Gulf of Mannar
+10.7600,72.1900,2026-03-17T08:20:00Z,Thunnus albacares (Yellowfin Tuna),640,IND-LKD-007,Lakshadweep
+14.0200,87.4100,2026-03-18T10:45:00Z,Rastrelliger kanagurta (Indian Mackerel),128,IND-AN-003,Andaman Sea
+19.2100,69.1500,2026-03-19T09:00:00Z,Thunnus albacares (Yellowfin Tuna),1200,IND-GJ-055,Gujarat shelf
+12.8800,68.4200,2026-03-20T11:00:00Z,Sardinella longiceps (Oil Sardine),58,IND-AS-012,Western Arabian Sea
+16.5500,82.2400,2026-03-21T08:30:00Z,Thunnus albacares (Yellowfin Tuna),705,IND-AP-090,Kakinada

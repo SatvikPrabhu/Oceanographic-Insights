@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  background: #070d16;
+  font-family: "IBM Plex Sans", sans-serif;
+}
+
+.leaflet-control-zoom a {
+  background: #121c28 !important;
+  color: #e6eef6 !important;
+  border-color: #1c2a3a !important;
+}
+
+.leaflet-control-attribution {
+  background: rgba(7, 13, 22, 0.75) !important;
+  color: #7b93ad !important;
+}
+
+.thalassa-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+.thalassa-pin {
+  display: grid;
+  place-items: center;
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: #121c28;
+  color: #e6eef6;
+  border: 1px solid #1c2a3a;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+}
