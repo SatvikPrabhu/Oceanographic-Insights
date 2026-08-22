@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import Navbar from "./components/layout/Navbar.jsx";
+import HomePage from "./components/home/HomePage.jsx";
 import MapWorkspace from "./components/map/MapWorkspace.jsx";
 import DataUploader from "./components/upload/DataUploader.jsx";
 import AnalyticsPanel from "./components/analytics/AnalyticsPanel.jsx";
@@ -38,6 +39,7 @@ function Dashboard() {
     <div className="flex h-full flex-col bg-ink-950">
       <Navbar />
       <ToastHost />
+      {activePage === "home" && <HomePage />}
       {activePage === "map" && (
         <MapWorkspace
           ocean={ocean}

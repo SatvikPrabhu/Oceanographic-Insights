@@ -5,7 +5,7 @@ const DashboardContext = createContext(null);
 
 export function DashboardProvider({ children }) {
   const [viewMode, setViewMode] = useState("researcher");
-  const [activePage, setActivePage] = useState("map");
+  const [activePage, setActivePage] = useState("home");
   const [layers, setLayers] = useState({
     ocean: true,
     fisheries: true,

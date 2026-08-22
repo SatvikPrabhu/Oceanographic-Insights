@@ -1,8 +1,9 @@
-import { Activity, BarChart3, Map, Radio, Shield, Upload, Waves } from "lucide-react";
+import { Activity, BarChart3, Compass, Map, Radio, Shield, Upload, Waves } from "lucide-react";
 import { useDashboard } from "../../context/DashboardContext";
 import { useHealth } from "../../hooks/useOceanApi";
 
 const PAGES = [
+  { id: "home", label: "Home", icon: Compass },
   { id: "map", label: "Interactive Map", icon: Map },
   { id: "ingest", label: "Ingestion Portal", icon: Upload },
   { id: "analytics", label: "AI Insights & Analytics", icon: BarChart3 },
@@ -27,7 +28,11 @@ export default function Navbar() {
   return (
     <header className="border-b border-white/10 bg-ink-900/90 backdrop-blur">
       <div className="flex h-16 items-center justify-between gap-4 px-4 md:px-6">
-        <div className="flex min-w-0 items-center gap-3">
+        <button
+          type="button"
+          onClick={() => setActivePage("home")}
+          className="flex min-w-0 items-center gap-3 text-left transition hover:opacity-90 focus:outline-none"
+        >
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-cyan-400/10 ring-1 ring-cyan-300/30">
             <Waves className="h-5 w-5 text-cyan-300" />
           </div>
@@ -40,7 +45,7 @@ export default function Navbar() {
               Arabian Sea / Indian Ocean GIS
             </p>
           </div>
-        </div>
+        </button>
 
         <div className="hidden items-center gap-2 lg:flex">
           <Badge ok={apiOk} label="API" />
