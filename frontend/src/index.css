@@ -15,6 +15,35 @@ body,
   font-family: "IBM Plex Sans", sans-serif;
 }
 
+.ocean-map-boat .leaflet-container,
+.ocean-map-boat .leaflet-container.leaflet-grab,
+.ocean-map-boat .leaflet-grab,
+.ocean-map-boat .leaflet-dragging .leaflet-grab,
+.ocean-map-boat .leaflet-dragging .leaflet-grab .leaflet-interactive,
+.ocean-map-boat .leaflet-interactive,
+.ocean-map-boat .leaflet-marker-icon,
+.ocean-map-boat .leaflet-tile,
+.ocean-map-boat .leaflet-overlay-pane,
+.ocean-map-boat .leaflet-pane,
+.ocean-map-boat .mapboxgl-canvas,
+.leaflet-container.leaflet-boat-cursor,
+.leaflet-container.leaflet-boat-cursor.leaflet-grab,
+.leaflet-dragging .leaflet-boat-cursor,
+.leaflet-dragging .leaflet-boat-cursor .leaflet-interactive {
+  cursor: none !important;
+}
+
+.ocean-map-boat-off .leaflet-container,
+.ocean-map-boat-off .leaflet-grab {
+  cursor: grab !important;
+}
+
+.ocean-map-boat .leaflet-control,
+.ocean-map-boat .leaflet-control a,
+.ocean-map-boat .ocean-fx-toggle {
+  cursor: pointer !important;
+}
+
 .leaflet-control-zoom a {
   background: #121c28 !important;
   color: #e6eef6 !important;
