@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
-import { DEFAULT_CENTER, queriesEqual } from "../lib/geo";
+import { DEFAULT_CENTER, DEFAULT_ZOOM, queriesEqual } from "../lib/geo";
 
 const DashboardContext = createContext(null);
 
@@ -19,11 +19,18 @@ export function DashboardProvider({ children }) {
     lng: DEFAULT_CENTER.lng,
     radiusKm: 320,
   });
+  const [mapCenter, setMapCenter] = useState(DEFAULT_CENTER);
+  const [mapZoom, setMapZoom] = useState(DEFAULT_ZOOM);
   const [selected, setSelected] = useState(null);
   const [toasts, setToasts] = useState([]);
 
   const setMapQuery = useCallback((next) => {
     setMapQueryState((prev) => (queriesEqual(prev, next) ? prev : next));
+  }, []);
+
+  const setMapViewport = useCallback((center, zoom) => {
+    setMapCenter(center);
+    if (zoom !== undefined) setMapZoom(zoom);
   }, []);
 
   const dismissToast = useCallback((id) => {
@@ -54,6 +61,11 @@ export function DashboardProvider({ children }) {
       setSpecies,
       mapQuery,
       setMapQuery,
+      mapCenter,
+      setMapCenter,
+      mapZoom,
+      setMapZoom,
+      setMapViewport,
       selected,
       setSelected,
       toasts,
@@ -69,6 +81,11 @@ export function DashboardProvider({ children }) {
       species,
       mapQuery,
       setMapQuery,
+      mapCenter,
+      setMapCenter,
+      mapZoom,
+      setMapZoom,
+      setMapViewport,
       selected,
       toasts,
       pushToast,

@@ -1,6 +1,9 @@
-import { Activity, BarChart3, Compass, Map, Radio, Shield, Upload, Waves } from "lucide-react";
+import { Activity, AlertTriangle, BarChart3, Compass, Map, Radio, Shield, Upload, Waves } from "lucide-react";
+import { useState } from "react";
 import { useDashboard } from "../../context/DashboardContext";
 import { useHealth } from "../../hooks/useOceanApi";
+import EcosystemDrawer from "./EcosystemDrawer.jsx";
+import mockAlerts from "../../data/mockAlerts.json";
 
 const PAGES = [
   { id: "home", label: "Home", icon: Compass },
@@ -19,11 +22,19 @@ function Badge({ ok, label }) {
 }
 
 export default function Navbar() {
-  const { viewMode, setViewMode, activePage, setActivePage } = useDashboard();
+  const { viewMode, setViewMode, activePage, setActivePage, setMapViewport } = useDashboard();
   const { data: health, isError } = useHealth();
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const mongoOk = Boolean(health?.services?.mongodb);
   const redisOk = Boolean(health?.services?.redis);
   const apiOk = !isError && Boolean(health?.status);
+  const alertCount = mockAlerts.length;
+
+  const handleLocate = (coordinates) => {
+    setDrawerOpen(false);
+    setActivePage("map");
+    setMapViewport(coordinates, 10);
+  };
 
   return (
     <header className="border-b border-white/10 bg-ink-900/90 backdrop-blur">
@@ -51,6 +62,17 @@ export default function Navbar() {
           <Badge ok={apiOk} label="API" />
           <Badge ok={mongoOk} label="Mongo" />
           <Badge ok={redisOk} label="Redis" />
+          <button
+            type="button"
+            onClick={() => setDrawerOpen(true)}
+            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-ink-800/80 px-3 py-1 text-[11px] font-medium tracking-wide text-ink-50 transition hover:bg-white/5 hover:border-white/20"
+          >
+            <AlertTriangle className={`h-3.5 w-3.5 ${alertCount > 0 ? "text-amber-400" : "text-emerald-400"}`} />
+            <span>Ecosystem Status</span>
+            <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${alertCount > 0 ? "bg-amber-400/10 text-amber-400 border border-amber-400/20" : "bg-emerald-400/10 text-emerald-400 border border-emerald-400/20"}`}>
+              {alertCount > 0 ? `${alertCount} Alerts` : "Optimal"}
+            </span>
+          </button>
         </div>
 
         <div className="flex items-center gap-2 rounded-full border border-white/10 bg-ink-800 p-1">
@@ -96,6 +118,8 @@ export default function Navbar() {
           );
         })}
       </nav>
+
+      <EcosystemDrawer isOpen={drawerOpen} onClose={() => setDrawerOpen(false)} onLocate={handleLocate} />
     </header>
   );
 }

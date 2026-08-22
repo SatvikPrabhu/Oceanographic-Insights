@@ -10,11 +10,41 @@ const EdnaData = require("../models/EdnaData");
 const { toGeoJSONPoint } = require("../utils/geoUtils");
 const { invalidateSpatialCache, connectRedis, redis } = require("../config/redis");
 
-const COUNT = 100;
+const COUNT = 50;
 const LAT_MIN = 8.0;
 const LAT_MAX = 20.0;
 const LNG_MIN = 68.0;
 const LNG_MAX = 88.0;
+
+// Alert zone coordinates matching mockAlerts.json
+const ALERT_ZONES = [
+  {
+    id: "alert-001",
+    lat: 12.87,
+    lng: 74.20,
+    surfaceTemperature: 30.8,
+    salinity: 35.2,
+    depth: 15,
+    dissolvedOxygen: 5.8,
+    species: "Rastrelliger kanagurta (Indian Mackerel)",
+    catchWeightKg: 120,
+    timestamp: new Date(Date.UTC(2026, 7, 20, 10, 30, 0)),
+    region: "Karnataka",
+  },
+  {
+    id: "alert-002",
+    lat: 17.68,
+    lng: 83.32,
+    surfaceTemperature: 29.1,
+    salinity: 34.8,
+    depth: 25,
+    dissolvedOxygen: 2.1,
+    species: "Sardinella longiceps (Oil Sardine)",
+    catchWeightKg: 85,
+    timestamp: new Date(Date.UTC(2026, 7, 21, 14, 15, 0)),
+    region: "Visakhapatnam",
+  },
+];
 
 const SPECIES = [
   {
@@ -91,6 +121,49 @@ function buildSynchronizedRecords(count = COUNT, seed = 20260821) {
   const fisheries = [];
   const edna = [];
 
+  // Insert alert zone records first
+  ALERT_ZONES.forEach((zone, idx) => {
+    const location = toGeoJSONPoint({ lat: zone.lat, lng: zone.lng });
+    const species = SPECIES.find((s) => s.name === zone.species);
+    const sequence = buildFastaSequence(rng, species.motifs);
+    const companion = SPECIES[(idx + 1) % SPECIES.length];
+    
+    // For alert-001 (thermal anomaly), reduce eDNA matches to simulate suppression
+    const detectedSpecies = zone.id === "alert-001" 
+      ? [species.name, species.common] // Only primary species, reduced diversity
+      : [species.name, species.common, companion.name, companion.common];
+
+    ocean.push({
+      location,
+      timestamp: zone.timestamp,
+      surfaceTemperature: zone.surfaceTemperature,
+      salinity: zone.salinity,
+      depth: zone.depth,
+      dissolvedOxygen: zone.dissolvedOxygen,
+      sensorId: `SIH-${pick(rng, SENSORS)}-ALERT-${zone.id}`,
+    });
+
+    fisheries.push({
+      location,
+      timestamp: new Date(zone.timestamp.getTime() + 3 * 60 * 60 * 1000),
+      species: zone.species,
+      catchWeightKg: zone.catchWeightKg,
+      vesselId: `IND-SIH-ALERT-${zone.id}`,
+      region: zone.region,
+    });
+
+    edna.push({
+      location,
+      timestamp: new Date(zone.timestamp.getTime() + 30 * 60 * 1000),
+      sampleId: `eDNA-SIH-ALERT-${zone.id}`,
+      sequenceHash: hashSequence(sequence),
+      detectedSpecies,
+      markerType: "16S rRNA",
+      _sequence: sequence,
+    });
+  });
+
+  // Generate background records with normal parameters
   for (let i = 0; i < count; i += 1) {
     const lat = lerp(rng, LAT_MIN, LAT_MAX, 4);
     const lng = lerp(rng, LNG_MIN, LNG_MAX, 4);
@@ -99,10 +172,12 @@ function buildSynchronizedRecords(count = COUNT, seed = 20260821) {
     const month = 1 + Math.floor(rng() * 6);
     const timestamp = new Date(Date.UTC(2026, month - 1, day, 5 + Math.floor(rng() * 10), 0, 0));
 
-    const surfaceTemperature = lerp(rng, 24, 31, 1);
+    // Normal temperature range 26-28°C for background
+    const surfaceTemperature = lerp(rng, 26, 28, 1);
     const salinity = lerp(rng, 34, 36, 2);
     const depth = lerp(rng, 10, 100, 1);
-    const dissolvedOxygen = Number((7.6 - (surfaceTemperature - 24) * 0.38 + (rng() - 0.5) * 0.4).toFixed(1));
+    // Normal oxygen range 5-7 mg/L
+    const dissolvedOxygen = lerp(rng, 5, 7, 1);
 
     const species = SPECIES[i % SPECIES.length];
     const warmFactor = (surfaceTemperature - 24) / 7;
@@ -122,7 +197,7 @@ function buildSynchronizedRecords(count = COUNT, seed = 20260821) {
       surfaceTemperature,
       salinity,
       depth,
-      dissolvedOxygen: Math.min(7.8, Math.max(4.2, dissolvedOxygen)),
+      dissolvedOxygen,
       sensorId: `SIH-${pick(rng, SENSORS)}-${String(i + 1).padStart(3, "0")}`,
     });
 

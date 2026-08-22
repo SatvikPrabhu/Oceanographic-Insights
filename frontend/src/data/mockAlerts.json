@@ -1,0 +1,30 @@
+[
+  {
+    "id": "alert-001",
+    "type": "thermal_anomaly",
+    "severity": "critical",
+    "title": "Marine Heatwave & eDNA Suppression",
+    "location": "Arabian Sea - Offshore Mangalore Sector",
+    "coordinates": {
+      "lat": 12.87,
+      "lng": 74.20
+    },
+    "physicalTrigger": "SST Spike (+2.1°C above baseline, reading 30.8°C)",
+    "biologicalImpact": "Indian Mackerel (Rastrelliger kanagurta) eDNA sequence count dropped by 42%",
+    "timestamp": "2026-08-20T10:30:00Z"
+  },
+  {
+    "id": "alert-002",
+    "type": "hypoxia_risk",
+    "severity": "warning",
+    "title": "Hypoxic Coastal Zone",
+    "location": "Bay of Bengal - Visakhapatnam Coastal Shelf",
+    "coordinates": {
+      "lat": 17.68,
+      "lng": 83.32
+    },
+    "physicalTrigger": "Dissolved Oxygen dropped to 2.1 mg/L (Critical Threshold <3.0 mg/L)",
+    "biologicalImpact": "Oil Sardine (Sardinella longiceps) catch yields reduced",
+    "timestamp": "2026-08-21T14:15:00Z"
+  }
+]

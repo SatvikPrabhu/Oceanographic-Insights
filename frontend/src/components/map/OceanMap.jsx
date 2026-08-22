@@ -4,6 +4,7 @@ import { boundsToQuery, DEFAULT_CENTER, DEFAULT_ZOOM, queriesEqual, toLatLng } f
 import { catchIconSize, dnaDivIcon, fishDivIcon } from "../../lib/mapIcons";
 import HeatmapLayer from "./HeatmapLayer.jsx";
 import WaterEffectsOverlay from "./WaterEffectsOverlay.jsx";
+import { useDashboard } from "../../context/DashboardContext.jsx";
 
 function LeafletCursorLock({ enabled }) {
   const map = useMap();
@@ -92,7 +93,20 @@ function EdnaLayer({ points, onSelect }) {
   });
 }
 
+function MapController({ center, zoom }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (center && zoom !== undefined) {
+      map.setView([center.lat, center.lng], zoom, { animate: true, duration: 1 });
+    }
+  }, [center, zoom, map]);
+
+  return null;
+}
+
 export default function OceanMap({ ocean, fisheries, edna, layers, onSelect, onBoundsChange }) {
+  const { mapCenter, mapZoom } = useDashboard();
   const oceanPoints = useMemo(() => ocean || [], [ocean]);
   const fishPoints = useMemo(() => fisheries || [], [fisheries]);
   const ednaPoints = useMemo(() => edna || [], [edna]);
@@ -116,6 +130,7 @@ export default function OceanMap({ ocean, fisheries, edna, layers, onSelect, onB
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         />
+        <MapController center={mapCenter} zoom={mapZoom} />
         <LeafletCursorLock enabled={boatEffects} />
         <BoundsReporter onChange={onBoundsChange} />
         {layers.ocean && <HeatmapLayer points={oceanPoints} onSelect={onSelect} />}
