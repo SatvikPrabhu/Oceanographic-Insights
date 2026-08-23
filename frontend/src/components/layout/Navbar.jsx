@@ -10,13 +10,11 @@ import {
   Radio,
   Shield,
   Upload,
-  User,
   Waves,
 } from "lucide-react";
 import { useState } from "react";
 import { useDashboard } from "../../context/DashboardContext";
 import { useAuth } from "../../context/AuthContext";
-import { useHealth } from "../../hooks/useOceanApi";
 import EcosystemDrawer from "./EcosystemDrawer.jsx";
 import EdnaInspectorModal from "../edna/EdnaInspectorModal.jsx";
 import ThemeToggle from "../ui/ThemeToggle.jsx";
@@ -25,36 +23,36 @@ import mockAlerts from "../../data/mockAlerts.json";
 const PAGES = [
   { id: "home", label: "Home", icon: Compass, protected: false },
   { id: "map", label: "Interactive Map", icon: Map, protected: false },
-  { id: "ingest", label: "Ingestion Portal", icon: Upload, protected: true, roleRequired: "researcher" },
-  { id: "analytics", label: "AI Insights & Analytics", icon: BarChart3, protected: false },
+  {
+    id: "ingest",
+    label: "Ingestion Portal",
+    icon: Upload,
+    protected: true,
+    roleRequired: "researcher",
+  },
+  {
+    id: "analytics",
+    label: "AI Insights & Analytics",
+    icon: BarChart3,
+    protected: false,
+  },
 ];
 
-function Badge({ ok, label }) {
-  return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-100/90 px-2.5 py-1 text-[11px] font-medium tracking-wide text-slate-700 dark:border-white/10 dark:bg-ink-800/80 dark:text-ink-50">
-      <span
-        className={`h-1.5 w-1.5 rounded-full ${
-          ok ? "bg-emerald-400 shadow-[0_0_8px_#34d399]" : "bg-rose-400"
-        }`}
-      />
-      {label}
-    </span>
-  );
-}
-
 export default function Navbar() {
-  const { viewMode, setViewMode, activePage, setActivePage, setMapViewport, pushToast } =
-    useDashboard();
+  const {
+    viewMode,
+    setViewMode,
+    activePage,
+    setActivePage,
+    setMapViewport,
+    pushToast,
+  } = useDashboard();
 
   const { user, isAuthenticated, logout, openAuthModal } = useAuth();
-  const { data: health, isError } = useHealth();
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [ednaModalOpen, setEdnaModalOpen] = useState(false);
 
-  const mongoOk = Boolean(health?.services?.mongodb);
-  const redisOk = Boolean(health?.services?.redis);
-  const apiOk = !isError && Boolean(health?.status);
   const alertCount = mockAlerts.length;
 
   const handleLocate = (coordinates) => {
@@ -99,6 +97,7 @@ export default function Navbar() {
   return (
     <header className="border-b border-slate-200 bg-white/95 text-slate-800 backdrop-blur dark:border-white/10 dark:bg-ink-900/90 dark:text-ink-50 transition-colors">
       <div className="flex h-16 items-center justify-between gap-4 px-4 md:px-6">
+        {/* Logo / Brand */}
         <button
           type="button"
           onClick={() => setActivePage("home")}
@@ -120,12 +119,8 @@ export default function Navbar() {
           </div>
         </button>
 
-        {/* Telemetry & Ecosystem Status */}
+        {/* eDNA & Ecosystem Status */}
         <div className="hidden items-center gap-2 lg:flex">
-          <Badge ok={apiOk} label="API" />
-          <Badge ok={mongoOk} label="Mongo" />
-          <Badge ok={redisOk} label="Redis" />
-
           <button
             type="button"
             onClick={() => setEdnaModalOpen(true)}
@@ -162,7 +157,7 @@ export default function Navbar() {
           </button>
         </div>
 
-        {/* Right Section: Perspective Switcher, Theme Toggle & Auth Profile */}
+        {/* Right Section */}
         <div className="flex items-center gap-2">
           {/* Persona Mode Switcher */}
           <div className="flex items-center gap-1 rounded-full border border-slate-200 bg-slate-100 p-1 dark:border-white/10 dark:bg-ink-800">
@@ -193,10 +188,10 @@ export default function Navbar() {
             </button>
           </div>
 
-          {/* Theme Toggle Button */}
+          {/* Theme Toggle */}
           <ThemeToggle />
 
-          {/* Authentication Badge / Sign In Button */}
+          {/* Authentication */}
           {isAuthenticated ? (
             <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100/90 py-1 pl-1.5 pr-2 backdrop-blur dark:border-white/15 dark:bg-ink-800/90">
               <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-tr from-cyan-500 to-teal-400 text-[11px] font-black text-ink-950">
@@ -243,7 +238,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Navigation Links Bar */}
+      {/* Navigation Links */}
       <nav className="flex gap-1 overflow-x-auto px-4 pb-3 md:px-6">
         {PAGES.map((page) => {
           const Icon = page.icon;
