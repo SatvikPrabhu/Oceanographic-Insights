@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#082f49"/>
+      <stop offset="50%" stopColor="#031d33"/>
+      <stop offset="100%" stopColor="#020d18"/>
+    </linearGradient>
+    <linearGradient id="waveCyan" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#38bdf8"/>
+      <stop offset="50%" stopColor="#22d3ee"/>
+      <stop offset="100%" stopColor="#2dd4bf"/>
+    </linearGradient>
+    <linearGradient id="crestGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stopColor="#e0f2fe"/>
+      <stop offset="100%" stopColor="#38bdf8"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background rounded squircle with glowing border -->
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#bgGrad)" stroke="#22d3ee" stroke-width="1.5" stroke-opacity="0.4"/>
+
+  <!-- Compass / Sonar Ambient Ring -->
+  <circle cx="32" cy="32" r="23" fill="none" stroke="#22d3ee" stroke-width="0.8" stroke-opacity="0.25" stroke-dasharray="2 3"/>
+
+  <!-- Lower Deep Ocean Wave -->
+  <path d="M12 40 C 20 45, 26 35, 34 38 C 42 41, 48 37, 52 35 C 52 46, 44 52, 32 52 C 20 52, 12 46, 12 40 Z" fill="#0e7490" fill-opacity="0.4"/>
+
+  <!-- Middle Ocean Wave -->
+  <path d="M10 34 C 18 27, 26 39, 36 32 C 44 26, 50 31, 54 30 C 54 39, 46 47, 32 47 C 18 47, 10 39, 10 34 Z" fill="url(#waveCyan)" fill-opacity="0.85"/>
+
+  <!-- Main Dynamic Wave Crest -->
+  <path d="M8 29 C 18 20, 26 36, 36 27 C 43 20, 49 25, 56 24 C 52 32, 44 42, 32 42 C 20 42, 12 36, 8 29 Z" fill="url(#waveCyan)" filter="url(#glow)"/>
+
+  <!-- Sharp Glowing Crest Line -->
+  <path d="M8 29 C 18 20, 26 36, 36 27 C 43 20, 49 25, 56 24" fill="none" stroke="url(#crestGlow)" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Sonar / Compass North Pulse Dot -->
+  <circle cx="32" cy="14" r="2.2" fill="#38bdf8"/>
+  <circle cx="32" cy="14" r="4.5" fill="none" stroke="#38bdf8" stroke-width="0.8" stroke-opacity="0.6"/>
+</svg>

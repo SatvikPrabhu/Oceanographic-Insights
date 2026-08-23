@@ -115,12 +115,12 @@ export default function HomePage() {
         {/* 🧭 TOP HEADER BAR: Brand & Active Perspective Selector */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 rounded-2xl border border-white/15 bg-ink-950/85 px-4 py-2.5 sm:px-5 backdrop-blur-2xl shadow-xl">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-cyan-400/10 ring-1 ring-cyan-300/30">
-              <Waves className="h-4 w-4 text-cyan-300" />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-cyan-400/10 ring-1 ring-cyan-300/40">
+              <Waves className="h-5 w-5 text-cyan-300" />
             </div>
             <div className="flex flex-col">
-              <span className="text-xs font-bold tracking-tight text-white">ThalassaGIS Platform</span>
-              <span className="text-[10px] uppercase tracking-wider text-cyan-200/70">
+              <span className="text-sm sm:text-base font-extrabold tracking-tight text-white">ThalassaGIS</span>
+              <span className="text-[10px] uppercase tracking-wider text-cyan-200/70 font-semibold">
                 {viewMode === "researcher" ? "Marine Researcher Perspective" : "Policy Maker Perspective"}
               </span>
             </div>
@@ -155,18 +155,22 @@ export default function HomePage() {
         </div>
 
         {/* Hero Section */}
-        <div className="text-center space-y-3 pt-1">
+        <div className="text-center space-y-2.5 pt-1">
           <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/40 bg-ink-950/80 px-4 py-1.5 text-xs font-medium text-cyan-300 backdrop-blur-md shadow-lg shadow-cyan-950/50">
             <Waves className="h-3.5 w-3.5 text-cyan-400" />
-            <span>ThalassaGIS · Arabian Sea & Indian Ocean</span>
+            <span>AI Marine Platform · Arabian Sea & Indian Ocean</span>
           </div>
 
-          <h1 className="mx-auto max-w-4xl text-3xl font-extrabold tracking-tight text-white drop-shadow-md sm:text-5xl sm:leading-[1.15]">
+          <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-white drop-shadow-lg">
+            Thalassa<span className="bg-gradient-to-r from-cyan-300 via-teal-200 to-emerald-300 bg-clip-text text-transparent">GIS</span>
+          </h1>
+
+          <p className="mx-auto max-w-3xl text-base sm:text-xl font-medium tracking-tight text-cyan-100/90 drop-shadow">
             Unified Intelligence for{" "}
-            <span className="bg-gradient-to-r from-cyan-300 via-teal-200 to-emerald-300 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-cyan-300 via-teal-200 to-emerald-300 bg-clip-text text-transparent font-semibold">
               Oceanography, Fisheries & eDNA
             </span>
-          </h1>
+          </p>
         </div>
 
         {/* 🔄 3D FLIP CARD FEATURE LAUNCHPAD */}
