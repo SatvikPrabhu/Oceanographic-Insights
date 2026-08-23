@@ -7,15 +7,19 @@ import {
   Dna,
   Fish,
   Info,
+  KeyRound,
+  LogOut,
   Radio,
   RotateCw,
   Shield,
   Sparkles,
   Thermometer,
   UploadCloud,
+  User,
   Waves,
 } from "lucide-react";
 import { useDashboard } from "../../context/DashboardContext";
+import { useAuth } from "../../context/AuthContext";
 import { useHealth, useSummary } from "../../hooks/useOceanApi";
 import OceanShipCanvas from "./OceanShipCanvas";
 import oceanBg from "../../assets/ocean-topdown.jpg";
@@ -35,6 +39,7 @@ const FEATURES = [
     border: "border-cyan-500/40 hover:border-cyan-400",
     glow: "group-hover:shadow-[0_0_35px_rgba(34,211,238,0.3)]",
     iconBg: "bg-cyan-400/20 text-cyan-200 border-cyan-400/40",
+    protected: false,
   },
   {
     id: "ingest",
@@ -50,6 +55,8 @@ const FEATURES = [
     border: "border-emerald-500/40 hover:border-emerald-400",
     glow: "group-hover:shadow-[0_0_35px_rgba(52,211,153,0.3)]",
     iconBg: "bg-emerald-400/20 text-emerald-200 border-emerald-400/40",
+    protected: true,
+    roleRequired: "researcher",
   },
   {
     id: "analytics",
@@ -65,11 +72,13 @@ const FEATURES = [
     border: "border-amber-500/40 hover:border-amber-400",
     glow: "group-hover:shadow-[0_0_35px_rgba(251,191,36,0.3)]",
     iconBg: "bg-amber-400/20 text-amber-200 border-amber-400/40",
+    protected: false,
   },
 ];
 
 export default function HomePage() {
-  const { setActivePage, viewMode, setViewMode } = useDashboard();
+  const { setActivePage, viewMode, setViewMode, pushToast } = useDashboard();
+  const { user, isAuthenticated, logout, openAuthModal } = useAuth();
   const [flipped, setFlipped] = useState({});
   const summary = useSummary();
   const health = useHealth();
@@ -84,6 +93,31 @@ export default function HomePage() {
   function toggleFlip(id, e) {
     e?.stopPropagation();
     setFlipped((prev) => ({ ...prev, [id]: !prev[id] }));
+  }
+
+  function handleLaunchFeature(feat, e) {
+    e?.stopPropagation();
+
+    if (feat.protected && !isAuthenticated) {
+      openAuthModal(`Please sign in with a Researcher account to access the ${feat.title}`, feat.id);
+      pushToast({
+        title: "Authentication Required",
+        message: `Please sign in to access the ${feat.title}`,
+        type: "warning",
+      });
+      return;
+    }
+
+    if (feat.roleRequired === "researcher" && isAuthenticated && user?.role === "policymaker") {
+      pushToast({
+        title: "Role Restriction",
+        message: "The Ingestion Portal requires a Researcher or Admin account.",
+        type: "error",
+      });
+      return;
+    }
+
+    setActivePage(feat.id);
   }
 
   return (
@@ -112,7 +146,7 @@ export default function HomePage() {
 
       {/* Main Content */}
       <div className="relative z-10 mx-auto max-w-6xl px-6 pt-4 pb-12 space-y-7">
-        {/* 🧭 TOP HEADER BAR: Brand & Active Perspective Selector */}
+        {/* 🧭 TOP HEADER BAR: Brand, Active Perspective & Auth Profile */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 rounded-2xl border border-white/15 bg-ink-950/85 px-4 py-2.5 sm:px-5 backdrop-blur-2xl shadow-xl">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-cyan-400/10 ring-1 ring-cyan-300/40">
@@ -126,31 +160,75 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setViewMode("researcher")}
-              className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs transition ${
-                viewMode === "researcher"
-                  ? "bg-cyan-400 text-ink-950 font-bold shadow-md shadow-cyan-950/50"
-                  : "text-ink-300 hover:text-white hover:bg-white/5"
-              }`}
-            >
-              <Radio className="h-3.5 w-3.5" />
-              Researcher View
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode("policy")}
-              className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs transition ${
-                viewMode === "policy"
-                  ? "bg-amber-300 text-ink-950 font-bold shadow-md shadow-amber-950/50"
-                  : "text-ink-300 hover:text-white hover:bg-white/5"
-              }`}
-            >
-              <Shield className="h-3.5 w-3.5" />
-              Policy Maker View
-            </button>
+          <div className="flex items-center gap-2.5">
+            {/* Perspective Switcher Buttons */}
+            <div className="flex items-center gap-1 rounded-full border border-white/10 bg-ink-900/80 p-1">
+              <button
+                type="button"
+                onClick={() => setViewMode("researcher")}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs transition ${
+                  viewMode === "researcher"
+                    ? "bg-cyan-400 text-ink-950 font-bold shadow-md shadow-cyan-950/50"
+                    : "text-ink-300 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                <Radio className="h-3.5 w-3.5" />
+                Researcher
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("policy")}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs transition ${
+                  viewMode === "policy"
+                    ? "bg-amber-300 text-ink-950 font-bold shadow-md shadow-amber-950/50"
+                    : "text-ink-300 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                <Shield className="h-3.5 w-3.5" />
+                Policy Maker
+              </button>
+            </div>
+
+            {/* Auth Profile / Sign In */}
+            {isAuthenticated ? (
+              <div className="flex items-center gap-2 rounded-full border border-white/15 bg-ink-900/90 py-1 pl-1.5 pr-2 backdrop-blur">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-tr from-cyan-500 to-teal-400 text-[11px] font-black text-ink-950">
+                  {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
+                </div>
+                <div className="hidden flex-col md:flex">
+                  <span className="max-w-[110px] truncate text-xs font-semibold text-white leading-tight">
+                    {user?.name}
+                  </span>
+                  <span className="text-[10px] capitalize leading-none text-cyan-300">
+                    {user?.role}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    logout();
+                    pushToast({
+                      title: "Signed Out",
+                      message: "You have been logged out successfully.",
+                      type: "info",
+                    });
+                  }}
+                  title="Log Out"
+                  className="ml-1 rounded-full p-1 text-ink-400 transition hover:bg-white/10 hover:text-rose-400"
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => openAuthModal()}
+                className="inline-flex items-center gap-1.5 rounded-full border border-cyan-400/40 bg-cyan-400/10 px-3.5 py-1.5 text-xs font-semibold text-cyan-300 shadow-sm transition hover:bg-cyan-400 hover:text-ink-950"
+              >
+                <KeyRound className="h-3.5 w-3.5" />
+                <span>Sign In</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -199,9 +277,16 @@ export default function HomePage() {
                         <div className={`flex h-12 w-12 items-center justify-center rounded-xl border ${feat.iconBg}`}>
                           <Icon className="h-6 w-6" />
                         </div>
-                        <span className="text-[11px] font-semibold uppercase tracking-wider text-ink-300">
-                          {feat.subtitle}
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          {feat.protected && (
+                            <span className="rounded-full border border-emerald-400/30 bg-emerald-950/40 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-300">
+                              Researcher RBAC
+                            </span>
+                          )}
+                          <span className="text-[11px] font-semibold uppercase tracking-wider text-ink-300">
+                            {feat.subtitle}
+                          </span>
+                        </div>
                       </div>
 
                       <h2 className="mt-4 text-xl font-bold text-white">{feat.title}</h2>
@@ -230,10 +315,7 @@ export default function HomePage() {
                       </span>
                       <button
                         type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActivePage(feat.id);
-                        }}
+                        onClick={(e) => handleLaunchFeature(feat, e)}
                         className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-semibold shadow-md transition hover:scale-[1.02] ${feat.btnColor}`}
                       >
                         <span>Open</span>
@@ -271,10 +353,7 @@ export default function HomePage() {
                     <div className="pt-3">
                       <button
                         type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActivePage(feat.id);
-                        }}
+                        onClick={(e) => handleLaunchFeature(feat, e)}
                         className={`inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${feat.btnColor}`}
                       >
                         <span>{feat.btnLabel}</span>

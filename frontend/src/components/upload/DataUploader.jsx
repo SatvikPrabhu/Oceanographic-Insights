@@ -1,6 +1,20 @@
 import { useMemo, useRef, useState } from "react";
-import { Dna, FileSpreadsheet, Fish, Thermometer, UploadCloud } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Dna,
+  FileSpreadsheet,
+  Fish,
+  KeyRound,
+  Lock,
+  Radio,
+  Shield,
+  Thermometer,
+  UploadCloud,
+  UserCheck,
+} from "lucide-react";
 import { useDashboard } from "../../context/DashboardContext";
+import { useAuth } from "../../context/AuthContext";
 import { useIngest } from "../../hooks/useOceanApi";
 
 const TABS = [
@@ -36,6 +50,7 @@ function isFasta(name = "") {
 
 export default function DataUploader() {
   const { pushToast, mapQuery } = useDashboard();
+  const { user, isAuthenticated, openAuthModal } = useAuth();
   const [tabId, setTabId] = useState("ocean");
   const [dragOver, setDragOver] = useState(false);
   const [file, setFile] = useState(null);
@@ -50,6 +65,9 @@ export default function DataUploader() {
   const Icon = tab.icon;
   const fasta = file ? isFasta(file.name) : false;
 
+  const isAuthorizedResearcher =
+    isAuthenticated && (user?.role === "researcher" || user?.role === "admin");
+
   const fields = useMemo(() => {
     if (tab.id !== "edna") return {};
     return { lat, lng, markerType };
@@ -63,6 +81,26 @@ export default function DataUploader() {
 
   async function onSubmit(event) {
     event.preventDefault();
+
+    if (!isAuthenticated) {
+      openAuthModal("Please sign in with a Researcher account to upload datasets", "ingest");
+      pushToast({
+        type: "warning",
+        title: "Authentication Required",
+        message: "You must be signed in with a Researcher account to upload datasets.",
+      });
+      return;
+    }
+
+    if (!isAuthorizedResearcher) {
+      pushToast({
+        type: "error",
+        title: "Access Denied",
+        message: "Your account does not have Researcher upload privileges.",
+      });
+      return;
+    }
+
     if (!file) {
       pushToast({ type: "error", title: "No file selected", message: "Drop a CSV or FASTA file first." });
       return;
@@ -90,15 +128,59 @@ export default function DataUploader() {
     <div className="h-full overflow-y-auto bg-ink-950 p-6">
       <div className="mx-auto max-w-3xl">
         <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-cyan-200/70">Ingestion portal</p>
-        <h1 className="mt-1 text-2xl font-semibold text-white">National silo upload</h1>
+        <h1 className="mt-1 text-2xl font-semibold text-white">National Silo Upload</h1>
         <p className="mt-2 text-sm text-ink-400">
           Load oceanographic, fisheries, and molecular files into the unified Mongo spatial store. FASTA files are parsed by the AI service before insert.
         </p>
 
+        {/* RBAC Status Banner */}
+        <div className="mt-4">
+          {!isAuthenticated ? (
+            <div className="flex items-center justify-between gap-3 rounded-2xl border border-amber-400/30 bg-amber-950/30 p-3.5 text-xs text-amber-200">
+              <div className="flex items-center gap-2.5">
+                <Lock className="h-4 w-4 shrink-0 text-amber-400" />
+                <span>
+                  <strong>Authentication Required:</strong> You must sign in as a <strong>Researcher</strong> to upload datasets.
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => openAuthModal("Sign in to upload datasets", "ingest")}
+                className="shrink-0 rounded-xl bg-amber-400 px-3 py-1.5 text-xs font-bold text-ink-950 shadow-md transition hover:bg-amber-300"
+              >
+                Sign In Now
+              </button>
+            </div>
+          ) : isAuthorizedResearcher ? (
+            <div className="flex items-center gap-2.5 rounded-2xl border border-emerald-500/30 bg-emerald-950/30 p-3 text-xs text-emerald-200">
+              <UserCheck className="h-4 w-4 shrink-0 text-emerald-400" />
+              <span>
+                <strong>Authenticated:</strong> Logged in as <strong className="text-white">{user.name}</strong> ({user.role}) — Authorized for National Silo Ingestion.
+              </span>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between gap-3 rounded-2xl border border-amber-400/30 bg-amber-950/30 p-3.5 text-xs text-amber-200">
+              <div className="flex items-center gap-2.5">
+                <Shield className="h-4 w-4 shrink-0 text-amber-400" />
+                <span>
+                  <strong>Policy Maker Account:</strong> Your role has view-only access. Switch to a Researcher account to upload raw files.
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => openAuthModal("Switch to a Researcher account to upload datasets", "ingest")}
+                className="shrink-0 rounded-xl border border-amber-400/50 bg-amber-400/10 px-3 py-1.5 text-xs font-semibold text-amber-300 transition hover:bg-amber-400 hover:text-ink-950"
+              >
+                Switch Account
+              </button>
+            </div>
+          )}
+        </div>
+
         <div className="mt-6 grid grid-cols-1 gap-2 sm:grid-cols-3">
           {TABS.map((item) => {
             const TabIcon = item.icon;
-            const active = item.id === tabId;
+            const active = item.id === tab.id;
             return (
               <button
                 key={item.id}
@@ -108,20 +190,23 @@ export default function DataUploader() {
                   setFile(null);
                   setProgress(0);
                 }}
-                className={`rounded-xl border px-3 py-3 text-left transition ${
+                className={`flex items-center gap-2.5 rounded-xl border p-3 text-left transition ${
                   active
-                    ? "border-cyan-400/40 bg-cyan-400/10 text-white"
-                    : "border-white/10 bg-ink-900 text-ink-400 hover:border-white/20 hover:text-white"
+                    ? "border-cyan-400/50 bg-cyan-400/10 text-white"
+                    : "border-white/10 bg-ink-900/60 text-ink-400 hover:border-white/20 hover:text-ink-200"
                 }`}
               >
-                <TabIcon className="h-4 w-4" />
-                <p className="mt-2 text-sm font-medium">{item.title}</p>
+                <TabIcon className={`h-4 w-4 ${active ? "text-cyan-300" : "text-ink-400"}`} />
+                <div>
+                  <p className="text-xs font-semibold">{item.title}</p>
+                  <p className="text-[11px] text-ink-400">Endpoint: {item.endpoint}</p>
+                </div>
               </button>
             );
           })}
         </div>
 
-        <form onSubmit={onSubmit} className="mt-6 space-y-4 rounded-2xl border border-white/10 bg-ink-900/80 p-5">
+        <form onSubmit={onSubmit} className="mt-6 space-y-4 rounded-2xl border border-white/10 bg-ink-900/50 p-6">
           <div
             onDragOver={(event) => {
               event.preventDefault();
@@ -133,20 +218,29 @@ export default function DataUploader() {
               setDragOver(false);
               chooseFile(event.dataTransfer.files?.[0]);
             }}
-            onClick={() => inputRef.current?.click()}
-            className={`flex cursor-pointer flex-col items-center rounded-2xl border-2 border-dashed px-6 py-12 text-center transition ${
-              dragOver ? "border-cyan-300 bg-cyan-400/10" : "border-white/15 bg-ink-800/40 hover:border-cyan-400/40"
+            className={`flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-8 text-center transition ${
+              dragOver
+                ? "border-cyan-400 bg-cyan-400/5"
+                : "border-white/15 bg-ink-950/40 hover:border-white/30"
             }`}
           >
-            <UploadCloud className="h-8 w-8 text-cyan-300" />
-            <p className="mt-3 text-sm font-medium text-white">Drag and drop {tab.title.toLowerCase()}</p>
-            <p className="mt-1 text-xs text-ink-400">or click to browse · max 25 MB</p>
+            <UploadCloud className="h-10 w-10 text-cyan-300" />
+            <p className="mt-2 text-sm text-white">Drag and drop your file here, or browse</p>
+            <p className="mt-1 text-xs text-ink-400">Accepts {tab.accept}</p>
             {file && (
-              <p className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-ink-900 px-3 py-1 text-xs text-cyan-100">
+              <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-xs text-cyan-200">
                 <FileSpreadsheet className="h-3.5 w-3.5" />
-                {file.name}
-              </p>
+                <span>{file.name}</span>
+                <span className="text-ink-400">({(file.size / 1024).toFixed(1)} KB)</span>
+              </div>
             )}
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              className="mt-4 rounded-full border border-white/15 bg-ink-800 px-4 py-1.5 text-xs font-medium text-white transition hover:bg-ink-700"
+            >
+              Choose file
+            </button>
             <input
               ref={inputRef}
               type="file"
@@ -209,7 +303,7 @@ export default function DataUploader() {
             <button
               type="submit"
               disabled={ingest.isPending}
-              className="rounded-full bg-cyan-400 px-5 py-2 text-sm font-semibold text-ink-950 disabled:opacity-50"
+              className="rounded-full bg-cyan-400 px-5 py-2 text-sm font-semibold text-ink-950 disabled:opacity-50 hover:bg-cyan-300 transition"
             >
               {ingest.isPending ? "Uploading…" : "Ingest file"}
             </button>

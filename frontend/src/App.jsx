@@ -5,7 +5,9 @@ import MapWorkspace from "./components/map/MapWorkspace.jsx";
 import DataUploader from "./components/upload/DataUploader.jsx";
 import AnalyticsPanel from "./components/analytics/AnalyticsPanel.jsx";
 import ToastHost from "./components/ui/ToastHost.jsx";
+import AuthModal from "./components/auth/AuthModal.jsx";
 import { DashboardProvider, useDashboard } from "./context/DashboardContext.jsx";
+import { AuthProvider } from "./context/AuthContext.jsx";
 import { useSpatialData, useSummary } from "./hooks/useOceanApi.js";
 import { matchesSpecies, uniqueSpeciesNames } from "./lib/species.js";
 
@@ -39,6 +41,7 @@ function Dashboard() {
     <div className="flex h-full flex-col bg-ink-950">
       {activePage !== "home" && <Navbar />}
       <ToastHost />
+      <AuthModal />
       {activePage === "home" && <HomePage />}
       {activePage === "map" && (
         <MapWorkspace
@@ -70,7 +73,9 @@ function Dashboard() {
 export default function App() {
   return (
     <DashboardProvider>
-      <Dashboard />
+      <AuthProvider>
+        <Dashboard />
+      </AuthProvider>
     </DashboardProvider>
   );
 }
