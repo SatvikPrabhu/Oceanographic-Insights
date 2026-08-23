@@ -1,58 +1,20 @@
 const mongoose = require("mongoose");
-const { isValidLngLat } = require("../utils/geoUtils");
 
-const oceanDataSchema = new mongoose.Schema(
-  {
-    location: {
-      type: {
-        type: String,
-        enum: ["Point"],
-        required: true,
-        default: "Point",
-      },
-      coordinates: {
-        type: [Number],
-        required: true,
-        validate: {
-          validator(value) {
-            return Array.isArray(value) && value.length === 2 && isValidLngLat(value[0], value[1]);
-          },
-          message: "location.coordinates must be [longitude, latitude] in decimal degrees",
-        },
-      },
-    },
-    timestamp: {
-      type: Date,
-      required: true,
-      default: Date.now,
-    },
-    surfaceTemperature: {
-      type: Number,
-      required: true,
-    },
-    salinity: {
-      type: Number,
-      required: true,
-    },
-    depth: {
-      type: Number,
-      required: true,
-    },
-    dissolvedOxygen: {
-      type: Number,
-      required: true,
-    },
-    sensorId: {
-      type: String,
-      required: true,
-      trim: true,
-      index: true,
-    },
+const OceanDataSchema = new mongoose.Schema({
+  location: {
+    type: { type: String, enum: ["Point"], default: "Point" },
+    coordinates: { type: [Number], required: true } // [decimalLongitude, decimalLatitude]
   },
-  { timestamps: true }
-);
+  timestamp: { type: Date, required: true },
+  depth_m: { type: Number, default: 0 },
+  sea_surface_temperature_c: { type: Number, default: null },
+  salinity_psu: { type: Number, default: null },
+  dissolved_oxygen_ml_l: { type: Number, default: null },
+  chlorophyll_a_mg_m3: { type: Number, default: null },
+  data_source: { type: String, default: "NOAA ERDDAP / Argo Floats" }
+}, { timestamps: true });
 
-oceanDataSchema.index({ location: "2dsphere" });
-oceanDataSchema.index({ timestamp: -1 });
+OceanDataSchema.index({ location: "2dsphere" });
+OceanDataSchema.index({ timestamp: 1 });
 
-module.exports = mongoose.model("OceanData", oceanDataSchema);
+module.exports = mongoose.model("OceanData", OceanDataSchema);
