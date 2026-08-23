@@ -17,6 +17,11 @@ import {
 import { useAuth } from "../../context/AuthContext";
 import { useDashboard } from "../../context/DashboardContext";
 
+function isValidEmail(val) {
+  if (!val) return false;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim());
+}
+
 export default function AuthModal() {
   const {
     authModalOpen,
@@ -44,6 +49,10 @@ export default function AuthModal() {
 
   if (!authModalOpen) return null;
 
+  const isEmailTouched = email.length > 0;
+  const isEmailValid = isValidEmail(email);
+  const showEmailError = isEmailTouched && !isEmailValid;
+
   function resetForm() {
     setError("");
     setName("");
@@ -60,6 +69,12 @@ export default function AuthModal() {
   async function handleLoginSubmit(e) {
     e.preventDefault();
     setError("");
+
+    if (!isValidEmail(email)) {
+      setError("Please enter a valid email address (e.g. name@domain.com)");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -91,6 +106,12 @@ export default function AuthModal() {
   async function handleSignupSubmit(e) {
     e.preventDefault();
     setError("");
+
+    if (!isValidEmail(email)) {
+      setError("Please enter a valid email address (e.g. name@domain.com)");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -232,18 +253,44 @@ export default function AuthModal() {
         {tab === "login" && (
           <form onSubmit={handleLoginSubmit} className="mt-4 space-y-3.5">
             <div>
-              <label className="block text-xs font-medium text-slate-700 dark:text-ink-300">Email Address</label>
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-medium text-slate-700 dark:text-ink-300">Email Address</label>
+                {isEmailValid && (
+                  <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                    <CheckCircle2 className="h-3 w-3" /> Valid email format
+                  </span>
+                )}
+              </div>
               <div className="relative mt-1.5">
-                <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-ink-400" />
+                <Mail className={`pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 ${
+                  showEmailError ? "text-rose-500" : isEmailValid ? "text-emerald-500" : "text-slate-400 dark:text-ink-400"
+                }`} />
                 <input
                   type="email"
                   required
+                  autoComplete="username email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (error) setError("");
+                  }}
                   placeholder="researcher@thalassagis.io"
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-cyan-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-cyan-500 dark:border-white/10 dark:bg-ink-950/90 dark:text-white dark:placeholder:text-ink-400 dark:focus:border-cyan-400 dark:focus:ring-cyan-400"
+                  className={`w-full rounded-xl border py-2.5 pl-9 pr-3 text-xs transition-colors focus:outline-none focus:ring-1 ${
+                    showEmailError
+                      ? "border-rose-400 bg-rose-50/50 text-slate-900 focus:border-rose-500 focus:ring-rose-500 dark:border-rose-500/60 dark:bg-rose-950/20 dark:text-white"
+                      : isEmailValid
+                      ? "border-emerald-400 bg-emerald-50/30 text-slate-900 focus:border-emerald-500 focus:ring-emerald-500 dark:border-emerald-500/50 dark:bg-emerald-950/20 dark:text-white"
+                      : "border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:border-cyan-500 focus:bg-white focus:ring-cyan-500 dark:border-white/10 dark:bg-ink-950/90 dark:text-white dark:placeholder:text-ink-400 dark:focus:border-cyan-400 dark:focus:ring-cyan-400"
+                  }`}
                 />
               </div>
+              {/* Real-time / As-you-type error message */}
+              {showEmailError && (
+                <p className="mt-1.5 flex items-center gap-1.5 text-[11px] font-semibold text-rose-600 dark:text-rose-400">
+                  <AlertCircle className="h-3 w-3 shrink-0" />
+                  Please enter a valid email (e.g. name@domain.com)
+                </p>
+              )}
             </div>
 
             <div>
@@ -253,6 +300,7 @@ export default function AuthModal() {
                 <input
                   type={showPassword ? "text" : "password"}
                   required
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
@@ -270,8 +318,8 @@ export default function AuthModal() {
 
             <button
               type="submit"
-              disabled={loading}
-              className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-500 py-2.5 text-xs font-bold text-white shadow-md transition hover:bg-cyan-400 disabled:opacity-50 dark:bg-cyan-400 dark:text-ink-950 dark:shadow-cyan-950/50 dark:hover:bg-cyan-300"
+              disabled={loading || showEmailError}
+              className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-500 py-2.5 text-xs font-bold text-white shadow-md transition hover:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-cyan-400 dark:text-ink-950 dark:shadow-cyan-950/50 dark:hover:bg-cyan-300"
             >
               {loading ? (
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -295,6 +343,7 @@ export default function AuthModal() {
                 <input
                   type="text"
                   required
+                  autoComplete="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Dr. Maya Sharma"
@@ -304,18 +353,44 @@ export default function AuthModal() {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-700 dark:text-ink-300">Email Address</label>
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-medium text-slate-700 dark:text-ink-300">Email Address</label>
+                {isEmailValid && (
+                  <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                    <CheckCircle2 className="h-3 w-3" /> Valid email format
+                  </span>
+                )}
+              </div>
               <div className="relative mt-1.5">
-                <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-ink-400" />
+                <Mail className={`pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 ${
+                  showEmailError ? "text-rose-500" : isEmailValid ? "text-emerald-500" : "text-slate-400 dark:text-ink-400"
+                }`} />
                 <input
                   type="email"
                   required
+                  autoComplete="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (error) setError("");
+                  }}
                   placeholder="name@institution.gov.in"
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-cyan-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-cyan-500 dark:border-white/10 dark:bg-ink-950/90 dark:text-white dark:placeholder:text-ink-400 dark:focus:border-cyan-400 dark:focus:ring-cyan-400"
+                  className={`w-full rounded-xl border py-2.5 pl-9 pr-3 text-xs transition-colors focus:outline-none focus:ring-1 ${
+                    showEmailError
+                      ? "border-rose-400 bg-rose-50/50 text-slate-900 focus:border-rose-500 focus:ring-rose-500 dark:border-rose-500/60 dark:bg-rose-950/20 dark:text-white"
+                      : isEmailValid
+                      ? "border-emerald-400 bg-emerald-50/30 text-slate-900 focus:border-emerald-500 focus:ring-emerald-500 dark:border-emerald-500/50 dark:bg-emerald-950/20 dark:text-white"
+                      : "border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:border-cyan-500 focus:bg-white focus:ring-cyan-500 dark:border-white/10 dark:bg-ink-950/90 dark:text-white dark:placeholder:text-ink-400 dark:focus:border-cyan-400 dark:focus:ring-cyan-400"
+                  }`}
                 />
               </div>
+              {/* Real-time / As-you-type error message */}
+              {showEmailError && (
+                <p className="mt-1.5 flex items-center gap-1.5 text-[11px] font-semibold text-rose-600 dark:text-rose-400">
+                  <AlertCircle className="h-3 w-3 shrink-0" />
+                  Please enter a valid email (e.g. name@domain.com)
+                </p>
+              )}
             </div>
 
             <div>
@@ -326,6 +401,7 @@ export default function AuthModal() {
                   type={showPassword ? "text" : "password"}
                   required
                   minLength={6}
+                  autoComplete="new-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
@@ -385,8 +461,8 @@ export default function AuthModal() {
 
             <button
               type="submit"
-              disabled={loading}
-              className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-500 py-2.5 text-xs font-bold text-white shadow-md transition hover:bg-cyan-400 disabled:opacity-50 dark:bg-cyan-400 dark:text-ink-950 dark:shadow-cyan-950/50 dark:hover:bg-cyan-300"
+              disabled={loading || showEmailError}
+              className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-500 py-2.5 text-xs font-bold text-white shadow-md transition hover:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-cyan-400 dark:text-ink-950 dark:shadow-cyan-950/50 dark:hover:bg-cyan-300"
             >
               {loading ? (
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
