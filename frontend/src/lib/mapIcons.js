@@ -36,3 +36,29 @@ export function dnaDivIcon(size) {
 export function catchIconSize(weightKg) {
   return Math.min(44, Math.max(20, 16 + Math.sqrt(Number(weightKg) || 0) * 2.4));
 }
+
+export function fishClusterIcon(count) {
+  const size = Math.min(60, 30 + count * 2);
+  const text = count >= 1000 ? (count / 1000).toFixed(1) + 'k' : count;
+  return L.divIcon({
+    className: "thalassa-cluster",
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+    html: `<div style="width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(16,185,129,0.2);border:2px solid rgba(6,182,212,0.8);box-shadow:0 0 15px rgba(6,182,212,0.6);color:#cffafe;font-weight:bold;font-size:12px;">
+      ${text}
+    </div>`,
+  });
+}
+
+export function dnaClusterIcon(count) {
+  const size = Math.min(55, 30 + count * 1.5);
+  const text = count >= 1000 ? (count / 1000).toFixed(1) + 'k' : count;
+  return L.divIcon({
+    className: "thalassa-cluster",
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+    html: `<div style="width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(168,85,247,0.2);border:2px solid rgba(139,92,246,0.8);box-shadow:0 0 15px rgba(139,92,246,0.6);color:#f3e8ff;font-weight:bold;font-size:12px;">
+      ${text}
+    </div>`,
+  });
+}

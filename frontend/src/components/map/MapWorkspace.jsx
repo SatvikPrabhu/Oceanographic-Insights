@@ -19,7 +19,11 @@ export default function MapWorkspace({
     <div className="flex min-h-0 flex-1">
       <Sidebar
         extraSpecies={extraSpecies}
-        layerCounts={{ ocean: ocean.length, fisheries: fisheries.length, edna: edna.length }}
+        layerCounts={{
+          ocean: summary.data?.totalOceanReadings != null ? `${Math.round(summary.data.totalOceanReadings / 1000)}k` : "0k",
+          fisheries: summary.data?.totalFishLandings != null ? `${Math.round(summary.data.totalFishLandings / 1000)}k` : "0k",
+          edna: summary.data?.totalEdnaSamples != null ? `${Math.round(summary.data.totalEdnaSamples / 1000)}k` : "0k"
+        }}
       />
       <main className="relative min-w-0 flex-1">
         {spatial.isFetching && (

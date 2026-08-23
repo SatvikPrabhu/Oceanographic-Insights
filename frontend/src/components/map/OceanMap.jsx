@@ -1,7 +1,8 @@
 import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from "react-leaflet";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import useSupercluster from "use-supercluster";
 import { boundsToQuery, DEFAULT_CENTER, DEFAULT_ZOOM, queriesEqual, toLatLng } from "../../lib/geo";
-import { catchIconSize, dnaDivIcon, fishDivIcon } from "../../lib/mapIcons";
+import { catchIconSize, dnaDivIcon, fishDivIcon, fishClusterIcon, dnaClusterIcon } from "../../lib/mapIcons";
 import HeatmapLayer from "./HeatmapLayer.jsx";
 import WaterEffectsOverlay from "./WaterEffectsOverlay.jsx";
 import { useDashboard } from "../../context/DashboardContext.jsx";
@@ -59,17 +60,76 @@ function BoundsReporter({ onChange }) {
 }
 
 function FisheriesLayer({ points, onSelect }) {
-  return points.map((point) => {
-    const loc = toLatLng(point);
-    if (!loc) return null;
-    const size = catchIconSize(point.catchWeightKg);
+  const map = useMap();
+  const [bounds, setBounds] = useState(null);
+  const [zoom, setZoom] = useState(map.getZoom());
+
+  const updateMap = useCallback(() => {
+    const b = map.getBounds();
+    setBounds([
+      b.getSouthWest().lng,
+      b.getSouthWest().lat,
+      b.getNorthEast().lng,
+      b.getNorthEast().lat
+    ]);
+    setZoom(map.getZoom());
+  }, [map]);
+
+  useEffect(() => {
+    updateMap();
+    map.on('moveend', updateMap);
+    return () => map.off('moveend', updateMap);
+  }, [map, updateMap]);
+
+  const geoJsonPoints = useMemo(() => {
+    return points.map(point => {
+      const loc = toLatLng(point);
+      if (!loc) return null;
+      return {
+        type: "Feature",
+        properties: { cluster: false, record: point },
+        geometry: { type: "Point", coordinates: [loc.lng, loc.lat] }
+      };
+    }).filter(Boolean);
+  }, [points]);
+
+  const { clusters, supercluster } = useSupercluster({
+    points: geoJsonPoints,
+    bounds,
+    zoom,
+    options: { radius: 50, maxZoom: 14 }
+  });
+
+  return clusters.map(cluster => {
+    const [longitude, latitude] = cluster.geometry.coordinates;
+    const { cluster: isCluster, point_count: pointCount, record } = cluster.properties;
+
+    if (isCluster) {
+      return (
+        <Marker
+          key={`cluster-${cluster.id}`}
+          position={[latitude, longitude]}
+          icon={fishClusterIcon(pointCount)}
+          eventHandlers={{
+            click: () => {
+              const expansionZoom = supercluster.getClusterExpansionZoom(cluster.id);
+              map.flyTo([latitude, longitude], expansionZoom, { animate: true, duration: 1 });
+            }
+          }}
+        />
+      );
+    }
+
+    if (zoom < 14) return null; // Unclustered individual pins render at zoom >= 14
+
+    const size = catchIconSize(record.catchWeightKg);
     return (
       <Marker
-        key={point._id}
-        position={[loc.lat, loc.lng]}
-        icon={fishDivIcon(size, point.catchWeightKg)}
+        key={`fish-${record._id}`}
+        position={[latitude, longitude]}
+        icon={fishDivIcon(size, record.catchWeightKg)}
         eventHandlers={{
-          click: () => onSelect({ origin: loc, source: "fisheries", record: point }),
+          click: () => onSelect({ origin: { lat: latitude, lng: longitude }, source: "fisheries", record }),
         }}
       />
     );
@@ -77,16 +137,75 @@ function FisheriesLayer({ points, onSelect }) {
 }
 
 function EdnaLayer({ points, onSelect }) {
-  return points.map((point) => {
-    const loc = toLatLng(point);
-    if (!loc) return null;
+  const map = useMap();
+  const [bounds, setBounds] = useState(null);
+  const [zoom, setZoom] = useState(map.getZoom());
+
+  const updateMap = useCallback(() => {
+    const b = map.getBounds();
+    setBounds([
+      b.getSouthWest().lng,
+      b.getSouthWest().lat,
+      b.getNorthEast().lng,
+      b.getNorthEast().lat
+    ]);
+    setZoom(map.getZoom());
+  }, [map]);
+
+  useEffect(() => {
+    updateMap();
+    map.on('moveend', updateMap);
+    return () => map.off('moveend', updateMap);
+  }, [map, updateMap]);
+
+  const geoJsonPoints = useMemo(() => {
+    return points.map(point => {
+      const loc = toLatLng(point);
+      if (!loc) return null;
+      return {
+        type: "Feature",
+        properties: { cluster: false, record: point },
+        geometry: { type: "Point", coordinates: [loc.lng, loc.lat] }
+      };
+    }).filter(Boolean);
+  }, [points]);
+
+  const { clusters, supercluster } = useSupercluster({
+    points: geoJsonPoints,
+    bounds,
+    zoom,
+    options: { radius: 45, maxZoom: 13 }
+  });
+
+  return clusters.map(cluster => {
+    const [longitude, latitude] = cluster.geometry.coordinates;
+    const { cluster: isCluster, point_count: pointCount, record } = cluster.properties;
+
+    if (isCluster) {
+      return (
+        <Marker
+          key={`cluster-${cluster.id}`}
+          position={[latitude, longitude]}
+          icon={dnaClusterIcon(pointCount)}
+          eventHandlers={{
+            click: () => {
+              const expansionZoom = supercluster.getClusterExpansionZoom(cluster.id);
+              map.flyTo([latitude, longitude], expansionZoom, { animate: true, duration: 1 });
+            }
+          }}
+        />
+      );
+    }
+
+    if (zoom < 13) return null; // Render at zoom >= 13
+
     return (
       <Marker
-        key={point._id}
-        position={[loc.lat, loc.lng]}
+        key={`edna-${record._id}`}
+        position={[latitude, longitude]}
         icon={dnaDivIcon(30)}
         eventHandlers={{
-          click: () => onSelect({ origin: loc, source: "edna", record: point }),
+          click: () => onSelect({ origin: { lat: latitude, lng: longitude }, source: "edna", record }),
         }}
       />
     );
@@ -121,8 +240,8 @@ export default function OceanMap({ ocean, fisheries, edna, layers, onSelect, onB
       <MapContainer
         center={[DEFAULT_CENTER.lat, DEFAULT_CENTER.lng]}
         zoom={DEFAULT_ZOOM}
-        minZoom={4}
-        maxZoom={12}
+        minZoom={3}
+        maxZoom={16}
         scrollWheelZoom
         className={`h-full w-full ${boatEffects ? "leaflet-boat-cursor" : ""}`}
       >

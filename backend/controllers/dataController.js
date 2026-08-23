@@ -91,10 +91,12 @@ const getUnifiedSpatial = asyncHandler(async (req, res) => {
   const query = spatialFilter({ lat, lng, radiusKm, startDate, endDate });
   const center = toGeoJSONPoint({ lat, lng });
 
+  const limit = parseInt(req.query.limit) || 50;
+
   const [ocean, fisheries, edna] = await Promise.all([
-    OceanData.find(query).sort({ timestamp: -1 }).limit(MAX_RESULTS).lean(),
-    FisheryData.find(query).sort({ timestamp: -1 }).limit(MAX_RESULTS).lean(),
-    EdnaData.find(query).sort({ timestamp: -1 }).limit(MAX_RESULTS).lean(),
+    OceanData.find(query).sort({ timestamp: -1 }).limit(limit).lean(),
+    FisheryData.find(query).sort({ timestamp: -1 }).limit(limit).lean(),
+    EdnaData.find(query).sort({ timestamp: -1 }).limit(limit).lean(),
   ]);
 
   const payload = {

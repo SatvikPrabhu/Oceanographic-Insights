@@ -44,12 +44,12 @@ async function seed() {
         lng: parseFloat(row.decimalLongitude),
       }),
       timestamp: row.time ? new Date(row.time) : new Date(),
-      sea_surface_temperature_c: parseFloat(row.sea_surface_temperature_c) || null,
-      salinity_psu: parseFloat(row.salinity_psu) || null,
-      depth_m: parseFloat(row.depth_m) || 0,
-      dissolved_oxygen_ml_l: parseFloat(row.dissolved_oxygen_ml_l) || null,
-      chlorophyll_a_mg_m3: parseFloat(row.chlorophyll_a_mg_m3) || null,
-      data_source: row.data_source || "NOAA ERDDAP / Argo Floats",
+      surfaceTemperature: parseFloat(row.sea_surface_temperature_c) || null,
+      salinity: parseFloat(row.salinity_psu) || null,
+      depth: parseFloat(row.depth_m) || 0,
+      dissolvedOxygen: parseFloat(row.dissolved_oxygen_ml_l) || null,
+      chlorophyllA: parseFloat(row.chlorophyll_a_mg_m3) || null,
+      dataSource: row.data_source || "NOAA ERDDAP / Argo Floats",
     }));
 
     // 2. Ingest Fish OBIS CSV
@@ -64,6 +64,7 @@ async function seed() {
       scientificName: row.scientificName || "Unknown Marine Species",
       species: row.species || "",
       individualCount: parseInt(row.individualCount) || parseInt(row.organismQuantity) || 1,
+      catchWeightKg: parseFloat(row.catchWeightKg) || parseFloat(row.weight) || 0,
       basisOfRecord: row.basisOfRecord || "HumanObservation",
       locality: row.locality || "",
       waterBody: row.waterBody || "Arabian Sea",
@@ -79,6 +80,11 @@ async function seed() {
     const ednaDocs = rawEdna.map((row) => ({
       location: toGeoJSONPoint({ lat: 15.0, lng: 72.0 }), // Default center grid if coordinates absent
       timestamp: new Date(),
+      sampleId: row.sampleId || row.accession || `edna-${Date.now()}`,
+      sequenceHash: row.sequenceHash || "",
+      detectedSpecies: row.detectedSpecies ? (Array.isArray(row.detectedSpecies) ? row.detectedSpecies : [row.detectedSpecies]) : [],
+      markerType: row.markerType || "16S rRNA",
+      // Legacy fields for backward compatibility
       accession: row.accession || "N/A",
       scientificName: row.scientificName || "Unknown Species",
       class: row.class || "",

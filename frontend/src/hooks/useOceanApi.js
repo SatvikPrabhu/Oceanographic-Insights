@@ -101,6 +101,19 @@ export function useIngest(onProgress) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["spatial"] });
       queryClient.invalidateQueries({ queryKey: ["summary"] });
+      queryClient.invalidateQueries({ queryKey: ["alerts"] });
     },
+  });
+}
+
+export function useAlerts() {
+  return useQuery({
+    queryKey: ["alerts"],
+    queryFn: async () => {
+      const { data } = await api.get("/data/alerts");
+      return data;
+    },
+    staleTime: 60_000,
+    retry: 1,
   });
 }

@@ -6,10 +6,15 @@ const EdnaDataSchema = new mongoose.Schema({
     coordinates: { type: [Number], required: true } // [decimalLongitude, decimalLatitude]
   },
   timestamp: { type: Date, default: Date.now },
-  accession: { type: String, required: true },
-  scientificName: { type: String, required: true },
+  sampleId: { type: String, required: true },
+  sequenceHash: { type: String, default: "" },
+  detectedSpecies: { type: [String], default: [] },
+  markerType: { type: String, default: "16S rRNA" },
+  // Legacy fields for backward compatibility with seed data
+  accession: { type: String, default: "" },
+  scientificName: { type: String, default: "" },
   class: { type: String, default: "" },
-  target_gene: { type: String, required: true },
+  target_gene: { type: String, default: "" },
   sequence_length_bp: { type: Number, default: 0 },
   locality: { type: String, default: "Indian Ocean" },
   title: { type: String, default: "" },

@@ -13,10 +13,13 @@
     "axios": "^1.7.9",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.468.0",
+    "puppeteer": "^25.8.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-leaflet": "^4.2.1",
-    "recharts": "^2.15.0"
+    "recharts": "^2.15.0",
+    "supercluster": "^9.0.0",
+    "use-supercluster": "^1.2.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.4",

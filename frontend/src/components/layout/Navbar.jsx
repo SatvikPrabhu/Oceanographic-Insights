@@ -18,7 +18,7 @@ import { useAuth } from "../../context/AuthContext";
 import EcosystemDrawer from "./EcosystemDrawer.jsx";
 import EdnaInspectorModal from "../edna/EdnaInspectorModal.jsx";
 import ThemeToggle from "../ui/ThemeToggle.jsx";
-import mockAlerts from "../../data/mockAlerts.json";
+import { useAlerts } from "../../hooks/useOceanApi";
 
 const PAGES = [
   { id: "home", label: "Home", icon: Compass, protected: false },
@@ -53,7 +53,9 @@ export default function Navbar() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [ednaModalOpen, setEdnaModalOpen] = useState(false);
 
-  const alertCount = mockAlerts.length;
+  const alertsQuery = useAlerts();
+  const alertList = alertsQuery.data?.alerts || [];
+  const alertCount = alertList.length;
 
   const handleLocate = (coordinates) => {
     setDrawerOpen(false);
@@ -266,6 +268,9 @@ export default function Navbar() {
         isOpen={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         onLocate={handleLocate}
+        alerts={alertList}
+        isLoading={alertsQuery.isLoading}
+        alertSource={alertsQuery.data?.source}
       />
 
       <EdnaInspectorModal
