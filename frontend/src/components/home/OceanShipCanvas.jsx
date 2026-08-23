@@ -1,23 +1,5 @@
 import { useEffect, useRef } from "react";
-import shipN from "../../assets/ship/ship_n.png";
-import shipNE from "../../assets/ship/ship_ne.png";
-import shipE from "../../assets/ship/ship_e.png";
-import shipSE from "../../assets/ship/ship_se.png";
-import shipS from "../../assets/ship/ship_s.png";
-import shipSW from "../../assets/ship/ship_sw.png";
-import shipW from "../../assets/ship/ship_w.png";
-import shipNW from "../../assets/ship/ship_nw.png";
-
-const SPRITE_MAP = {
-  n: shipN,
-  ne: shipNE,
-  e: shipE,
-  se: shipSE,
-  s: shipS,
-  sw: shipSW,
-  w: shipW,
-  nw: shipNW,
-};
+import shipImgSrc from "../../assets/ship/ship_n.png";
 
 export default function OceanShipCanvas() {
   const canvasRef = useRef(null);
@@ -32,13 +14,9 @@ export default function OceanShipCanvas() {
     let width = (canvas.width = window.innerWidth);
     let height = (canvas.height = window.innerHeight);
 
-    // Preload all 8-directional ship sprites
-    const loadedImages = {};
-    Object.entries(SPRITE_MAP).forEach(([dir, src]) => {
-      const img = new Image();
-      img.src = src;
-      loadedImages[dir] = img;
-    });
+    // Preload single high-resolution research vessel sprite
+    const shipImg = new Image();
+    shipImg.src = shipImgSrc;
 
     // Ship state
     const ship = {
@@ -46,7 +24,7 @@ export default function OceanShipCanvas() {
       y: height * 0.65,
       targetX: width * 0.5,
       targetY: height * 0.65,
-      angle: -Math.PI / 2, // start pointing North
+      angle: -Math.PI / 2, // start pointing North (-Y)
       speed: 0,
       maxSpeed: 4.8,
       size: 72, // Ship rendering size
@@ -54,8 +32,7 @@ export default function OceanShipCanvas() {
 
     // Wake and bow wave particles
     const wakes = [];
-    const MAX_WAKES = 40;
-
+    const MAX_WAKES = 45;
     let lastWakeTime = 0;
 
     function handleResize() {
@@ -80,23 +57,7 @@ export default function OceanShipCanvas() {
     window.addEventListener("mousemove", handlePointerMove, { passive: true });
     window.addEventListener("touchmove", handleTouchMove, { passive: true });
 
-    // Determine the 8-directional sprite key from an angle (radians)
-    function getDirectionKey(angle) {
-      // Normalize angle to [0, 2PI]
-      let deg = ((angle * 180) / Math.PI + 90) % 360;
-      if (deg < 0) deg += 360;
-
-      if (deg >= 337.5 || deg < 22.5) return "n";
-      if (deg >= 22.5 && deg < 67.5) return "ne";
-      if (deg >= 67.5 && deg < 112.5) return "e";
-      if (deg >= 112.5 && deg < 157.5) return "se";
-      if (deg >= 157.5 && deg < 202.5) return "s";
-      if (deg >= 202.5 && deg < 247.5) return "sw";
-      if (deg >= 247.5 && deg < 292.5) return "w";
-      return "nw";
-    }
-
-    // Helper: shortest angle difference
+    // Helper: shortest angular distance around [-PI, PI]
     function angleDiff(a, b) {
       let diff = (b - a) % (Math.PI * 2);
       if (diff < -Math.PI) diff += Math.PI * 2;
@@ -156,12 +117,12 @@ export default function OceanShipCanvas() {
       const dist = Math.hypot(dx, dy);
 
       if (dist > 18) {
-        // Turn smoothly towards target
+        // Continuous smooth rotation towards target cursor
         const targetAngle = Math.atan2(dy, dx);
         const diff = angleDiff(ship.angle, targetAngle);
-        ship.angle += diff * 0.08;
+        ship.angle += diff * 0.085;
 
-        // Accelerate smoothly
+        // Accelerate smoothly based on distance
         const targetSpeed = Math.min(dist * 0.06, ship.maxSpeed);
         ship.speed += (targetSpeed - ship.speed) * 0.08;
 
@@ -169,7 +130,7 @@ export default function OceanShipCanvas() {
         ship.x += Math.cos(ship.angle) * ship.speed;
         ship.y += Math.sin(ship.angle) * ship.speed;
 
-        // Spawn wakes when moving
+        // Spawn wakes when cruising
         if (now - lastWakeTime > 45 && ship.speed > 0.6) {
           spawnShipWakes(ship.x, ship.y, ship.angle, ship.speed);
           lastWakeTime = now;
@@ -181,7 +142,7 @@ export default function OceanShipCanvas() {
         ship.y += Math.sin(ship.angle) * ship.speed;
       }
 
-      // Gentle floating bobbing when idle
+      // Gentle floating bobbing and roll when on water
       const bobbing = Math.sin(now * 0.0025) * 1.5;
       const rollAngle = Math.sin(now * 0.002) * 0.03;
 
@@ -212,23 +173,24 @@ export default function OceanShipCanvas() {
         }
       }
 
-      // --- 3. Render Ship with Directional Sprite ---
-      const dirKey = getDirectionKey(ship.angle);
-      const spriteImg = loadedImages[dirKey] || loadedImages["n"];
-
+      // --- 3. Render Ship with Smooth 360° Canvas Rotation ---
       ctx.save();
       ctx.translate(ship.x, ship.y + bobbing);
 
-      // Subtle water shadow under the vessel
+      // Rotate canvas to exact continuous heading (sprite default orientation points North / -Y)
+      const rotationRad = ship.angle + Math.PI / 2 + rollAngle;
+      ctx.rotate(rotationRad);
+
+      // Subtle water shadow under the vessel hull
       ctx.beginPath();
-      ctx.ellipse(4, 8, ship.size * 0.28, ship.size * 0.45, ship.angle + Math.PI / 2, 0, Math.PI * 2);
+      ctx.ellipse(3, 6, ship.size * 0.24, ship.size * 0.44, 0, 0, Math.PI * 2);
       ctx.fillStyle = "rgba(2, 11, 20, 0.45)";
       ctx.fill();
 
-      // Draw the directional ship sprite
-      if (spriteImg && spriteImg.complete && spriteImg.naturalWidth > 0) {
+      // Draw the single high-res vessel sprite
+      if (shipImg && shipImg.complete && shipImg.naturalWidth > 0) {
         const drawSize = ship.size;
-        ctx.drawImage(spriteImg, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
+        ctx.drawImage(shipImg, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
       }
 
       ctx.restore();
