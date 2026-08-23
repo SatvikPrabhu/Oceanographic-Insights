@@ -54,3 +54,29 @@ class PredictImpactResponse(BaseModel):
     modelDegree: int
     sampleSize: int
     species: Optional[str] = None
+
+
+class AlignSequenceRequest(BaseModel):
+    sequence: str = Field(..., min_length=10)
+
+    @field_validator("sequence")
+    @classmethod
+    def clean_sequence(cls, value: str) -> str:
+        return value.strip().upper().replace(" ", "").replace("\n", "")
+
+
+class AlignmentResult(BaseModel):
+    query: str
+    reference: str
+    match: str
+    queryLength: int
+    referenceLength: int
+
+
+class AlignSequenceResponse(BaseModel):
+    species: str
+    commonName: str
+    matchConfidence: float
+    conservationStatus: str
+    alignment: AlignmentResult
+    coordinates: List[List[float]]

@@ -1,8 +1,9 @@
-import { Activity, AlertTriangle, BarChart3, Compass, Map, Radio, Shield, Upload, Waves } from "lucide-react";
+import { Activity, AlertTriangle, BarChart3, Compass, Dna, Map, Radio, Shield, Upload, Waves } from "lucide-react";
 import { useState } from "react";
 import { useDashboard } from "../../context/DashboardContext";
 import { useHealth } from "../../hooks/useOceanApi";
 import EcosystemDrawer from "./EcosystemDrawer.jsx";
+import EdnaInspectorModal from "../edna/EdnaInspectorModal.jsx";
 import mockAlerts from "../../data/mockAlerts.json";
 
 const PAGES = [
@@ -25,6 +26,7 @@ export default function Navbar() {
   const { viewMode, setViewMode, activePage, setActivePage, setMapViewport } = useDashboard();
   const { data: health, isError } = useHealth();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [ednaModalOpen, setEdnaModalOpen] = useState(false);
   const mongoOk = Boolean(health?.services?.mongodb);
   const redisOk = Boolean(health?.services?.redis);
   const apiOk = !isError && Boolean(health?.status);
@@ -62,6 +64,14 @@ export default function Navbar() {
           <Badge ok={apiOk} label="API" />
           <Badge ok={mongoOk} label="Mongo" />
           <Badge ok={redisOk} label="Redis" />
+          <button
+            type="button"
+            onClick={() => setEdnaModalOpen(true)}
+            className="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/5 px-3 py-1 text-[11px] font-medium tracking-wide text-cyan-300 transition hover:bg-cyan-400/10 hover:border-cyan-400/50"
+          >
+            <Dna className="h-3.5 w-3.5" />
+            <span>eDNA BLAST Inspector</span>
+          </button>
           <button
             type="button"
             onClick={() => setDrawerOpen(true)}
@@ -120,6 +130,7 @@ export default function Navbar() {
       </nav>
 
       <EcosystemDrawer isOpen={drawerOpen} onClose={() => setDrawerOpen(false)} onLocate={handleLocate} />
+      <EdnaInspectorModal isOpen={ednaModalOpen} onClose={() => setEdnaModalOpen(false)} />
     </header>
   );
 }

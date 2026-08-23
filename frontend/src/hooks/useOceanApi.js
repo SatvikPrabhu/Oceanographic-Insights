@@ -67,6 +67,15 @@ export function usePredictImpact(payload, enabled) {
   });
 }
 
+export function useAlignSequence() {
+  return useMutation({
+    mutationFn: async (sequence) => {
+      const { data } = await api.post("/edna/align", { sequence }, { timeout: 30000 });
+      return data;
+    },
+  });
+}
+
 export function useIngest(onProgress) {
   const queryClient = useQueryClient();
 
