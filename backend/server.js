@@ -10,7 +10,9 @@ const { notFound, errorHandler } = require("./middleware/errorHandler");
 const ingestRoutes = require("./routes/ingestRoutes");
 const dataRoutes = require("./routes/dataRoutes");
 const aiRoutes = require("./routes/aiRoutes");
+const authRoutes = require("./routes/authRoutes");
 
+require("./models/User");
 require("./models/OceanData");
 require("./models/FisheryData");
 require("./models/EdnaData");
@@ -50,6 +52,7 @@ app.get("/api/health", async (_req, res, next) => {
   }
 });
 
+app.use("/api/auth", authRoutes);
 app.use("/api/ingest", ingestRoutes);
 app.use("/api/data", dataRoutes);
 app.use("/api", aiRoutes);

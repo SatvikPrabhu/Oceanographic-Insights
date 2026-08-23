@@ -5,7 +5,10 @@ import MapWorkspace from "./components/map/MapWorkspace.jsx";
 import DataUploader from "./components/upload/DataUploader.jsx";
 import AnalyticsPanel from "./components/analytics/AnalyticsPanel.jsx";
 import ToastHost from "./components/ui/ToastHost.jsx";
+import AuthModal from "./components/auth/AuthModal.jsx";
 import { DashboardProvider, useDashboard } from "./context/DashboardContext.jsx";
+import { AuthProvider } from "./context/AuthContext.jsx";
+import { ThemeProvider } from "./context/ThemeContext.jsx";
 import { useSpatialData, useSummary } from "./hooks/useOceanApi.js";
 import { matchesSpecies, uniqueSpeciesNames } from "./lib/species.js";
 
@@ -36,9 +39,10 @@ function Dashboard() {
   const edna = (payload?.data?.edna || []).filter((row) => matchesSpecies(row, species));
 
   return (
-    <div className="flex h-full flex-col bg-ink-950">
+    <div className="flex h-full flex-col bg-slate-900 text-slate-100 dark:bg-ink-950 dark:text-ink-50 transition-colors duration-200">
       {activePage !== "home" && <Navbar />}
       <ToastHost />
+      <AuthModal />
       {activePage === "home" && <HomePage />}
       {activePage === "map" && (
         <MapWorkspace
@@ -69,8 +73,12 @@ function Dashboard() {
 
 export default function App() {
   return (
-    <DashboardProvider>
-      <Dashboard />
-    </DashboardProvider>
+    <ThemeProvider>
+      <DashboardProvider>
+        <AuthProvider>
+          <Dashboard />
+        </AuthProvider>
+      </DashboardProvider>
+    </ThemeProvider>
   );
 }
