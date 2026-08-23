@@ -37,7 +37,7 @@ function Dashboard() {
 
   return (
     <div className="flex h-full flex-col bg-ink-950">
-      <Navbar />
+      {activePage !== "home" && <Navbar />}
       <ToastHost />
       {activePage === "home" && <HomePage />}
       {activePage === "map" && (
