@@ -1,5 +1,7 @@
 {
   "dependencies": {
-    "jsonwebtoken": "^9.0.3"
+    "@mui/material": "^9.3.1",
+    "jsonwebtoken": "^9.0.3",
+    "jspdf": "^4.2.1"
   }
 }
