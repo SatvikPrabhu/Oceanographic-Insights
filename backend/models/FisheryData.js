@@ -9,6 +9,7 @@ const FisheryDataSchema = new mongoose.Schema({
   scientificName: { type: String, required: true },
   species: { type: String, default: "" },
   individualCount: { type: Number, default: 1 },
+  catchWeightKg: { type: Number, required: true },
   basisOfRecord: { type: String, default: "HumanObservation" },
   locality: { type: String, default: "" },
   waterBody: { type: String, default: "Arabian Sea" },

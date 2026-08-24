@@ -9,11 +9,13 @@ function isPopulated(payload) {
 }
 
 export function useSpatialData({ lat, lng, radiusKm, startDate, endDate }) {
+  // Use a fixed wide bounding box instead of the dynamic mapQuery
+  // to prevent thrashing API on pan/zoom
   return useQuery({
-    queryKey: ["spatial", lat, lng, radiusKm, startDate, endDate],
-    enabled: Number.isFinite(lat) && Number.isFinite(lng) && radiusKm > 0,
+    queryKey: ["spatial", "nationwide", startDate, endDate],
     queryFn: async () => {
-      const params = { lat, lng, radiusKm };
+      // Hardcoded nationwide/regional scope (e.g. India EEZ)
+      const params = { lat: 15.0, lng: 73.0, radiusKm: 3000 };
       if (startDate) params.startDate = `${startDate}T00:00:00.000Z`;
       if (endDate) params.endDate = `${endDate}T23:59:59.999Z`;
 
@@ -27,7 +29,8 @@ export function useSpatialData({ lat, lng, radiusKm, startDate, endDate }) {
         return { ...DEMO_SPATIAL, demo: true, apiError: true };
       }
     },
-    staleTime: 30_000,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -67,6 +70,15 @@ export function usePredictImpact(payload, enabled) {
   });
 }
 
+export function useAlignSequence() {
+  return useMutation({
+    mutationFn: async (sequence) => {
+      const { data } = await api.post("/edna/align", { sequence }, { timeout: 30000 });
+      return data;
+    },
+  });
+}
+
 export function useIngest(onProgress) {
   const queryClient = useQueryClient();
 
@@ -92,6 +104,19 @@ export function useIngest(onProgress) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["spatial"] });
       queryClient.invalidateQueries({ queryKey: ["summary"] });
+      queryClient.invalidateQueries({ queryKey: ["alerts"] });
     },
+  });
+}
+
+export function useAlerts() {
+  return useQuery({
+    queryKey: ["alerts"],
+    queryFn: async () => {
+      const { data } = await api.get("/data/alerts");
+      return data;
+    },
+    staleTime: 60_000,
+    retry: 1,
   });
 }

@@ -151,6 +151,7 @@ const ingestFisheries = asyncHandler(async (req, res) => {
       documents.push({
         location: locationFromRow(row),
         timestamp: parseDate(cell(row, "date", "timestamp", "datetime")),
+        scientificName: species, // Use species as scientificName (required field)
         species,
         catchWeightKg: requireNumber(
           cell(row, "catchweight", "catchweightkg", "weight", "catch_kg"),

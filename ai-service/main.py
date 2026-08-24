@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from routes.fasta_parser import router as fasta_router
 from routes.predict import router as predict_router
+from routes.align_sequence import router as align_router
 from schemas import HealthResponse
 
 app = FastAPI(
@@ -21,6 +22,7 @@ app.add_middleware(
 
 app.include_router(fasta_router)
 app.include_router(predict_router)
+app.include_router(align_router)
 
 
 @app.get("/health", response_model=HealthResponse)

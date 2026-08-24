@@ -3,48 +3,59 @@ import {
   AlertTriangle,
   BarChart3,
   Compass,
+  Dna,
   KeyRound,
   LogOut,
   Map,
   Radio,
   Shield,
   Upload,
-  User,
   Waves,
 } from "lucide-react";
 import { useState } from "react";
 import { useDashboard } from "../../context/DashboardContext";
 import { useAuth } from "../../context/AuthContext";
-import { useHealth } from "../../hooks/useOceanApi";
 import EcosystemDrawer from "./EcosystemDrawer.jsx";
+import EdnaInspectorModal from "../edna/EdnaInspectorModal.jsx";
 import ThemeToggle from "../ui/ThemeToggle.jsx";
-import mockAlerts from "../../data/mockAlerts.json";
+import { useAlerts } from "../../hooks/useOceanApi";
 
 const PAGES = [
   { id: "home", label: "Home", icon: Compass, protected: false },
   { id: "map", label: "Interactive Map", icon: Map, protected: false },
-  { id: "ingest", label: "Ingestion Portal", icon: Upload, protected: true, roleRequired: "researcher" },
-  { id: "analytics", label: "AI Insights & Analytics", icon: BarChart3, protected: false },
+  {
+    id: "ingest",
+    label: "Ingestion Portal",
+    icon: Upload,
+    protected: true,
+    roleRequired: "researcher",
+  },
+  {
+    id: "analytics",
+    label: "AI Insights & Analytics",
+    icon: BarChart3,
+    protected: false,
+  },
 ];
 
-function Badge({ ok, label }) {
-  return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-100/90 px-2.5 py-1 text-[11px] font-medium tracking-wide text-slate-700 dark:border-white/10 dark:bg-ink-800/80 dark:text-ink-50">
-      <span className={`h-1.5 w-1.5 rounded-full ${ok ? "bg-emerald-400 shadow-[0_0_8px_#34d399]" : "bg-rose-400"}`} />
-      {label}
-    </span>
-  );
-}
-
 export default function Navbar() {
-  const { viewMode, setViewMode, activePage, setActivePage, setMapViewport, pushToast } = useDashboard();
+  const {
+    viewMode,
+    setViewMode,
+    activePage,
+    setActivePage,
+    setMapViewport,
+    pushToast,
+  } = useDashboard();
+
   const { user, isAuthenticated, logout, openAuthModal } = useAuth();
-  const { data: health, isError } = useHealth();
+
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const mongoOk = Boolean(health?.services?.mongodb);
-  const redisOk = Boolean(health?.services?.redis);
-  const apiOk = !isError && Boolean(health?.status);
-  const alertCount = mockAlerts.length;
+  const [ednaModalOpen, setEdnaModalOpen] = useState(false);
+
+  const alertsQuery = useAlerts();
+  const alertList = alertsQuery.data?.alerts || [];
+  const alertCount = alertList.length;
 
   const handleLocate = (coordinates) => {
     setDrawerOpen(false);
@@ -54,21 +65,31 @@ export default function Navbar() {
 
   const handlePageClick = (page) => {
     if (page.protected && !isAuthenticated) {
-      openAuthModal(`Please sign in with a Researcher account to access the ${page.label}`, page.id);
+      openAuthModal(
+        `Please sign in with a Researcher account to access the ${page.label}`,
+        page.id
+      );
+
       pushToast({
         title: "Authentication Required",
         message: `Please sign in to access the ${page.label}`,
         type: "warning",
       });
+
       return;
     }
 
-    if (page.roleRequired === "researcher" && isAuthenticated && user?.role === "policymaker") {
+    if (
+      page.roleRequired === "researcher" &&
+      isAuthenticated &&
+      user?.role === "policymaker"
+    ) {
       pushToast({
         title: "Role Restriction",
         message: "The Ingestion Portal requires a Researcher or Admin account.",
         type: "error",
       });
+
       return;
     }
 
@@ -78,6 +99,7 @@ export default function Navbar() {
   return (
     <header className="border-b border-slate-200 bg-white/95 text-slate-800 backdrop-blur dark:border-white/10 dark:bg-ink-900/90 dark:text-ink-50 transition-colors">
       <div className="flex h-16 items-center justify-between gap-4 px-4 md:px-6">
+        {/* Logo / Brand */}
         <button
           type="button"
           onClick={() => setActivePage("home")}
@@ -86,10 +108,12 @@ export default function Navbar() {
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-cyan-500/10 ring-1 ring-cyan-500/30 dark:bg-cyan-400/10 dark:ring-cyan-300/30">
             <Waves className="h-5 w-5 text-cyan-600 dark:text-cyan-300" />
           </div>
+
           <div className="min-w-0">
             <p className="truncate text-sm font-bold tracking-tight text-slate-900 dark:text-white">
               ThalassaGIS - AI Ocean Platform
             </p>
+
             <p className="flex items-center gap-1 text-[11px] uppercase tracking-[0.16em] text-cyan-700 dark:text-cyan-200/70">
               <Activity className="h-3 w-3" />
               Arabian Sea / Indian Ocean GIS
@@ -97,18 +121,32 @@ export default function Navbar() {
           </div>
         </button>
 
-        {/* Telemetry & Ecosystem Status */}
+        {/* eDNA & Ecosystem Status */}
         <div className="hidden items-center gap-2 lg:flex">
-          <Badge ok={apiOk} label="API" />
-          <Badge ok={mongoOk} label="Mongo" />
-          <Badge ok={redisOk} label="Redis" />
+          <button
+            type="button"
+            onClick={() => setEdnaModalOpen(true)}
+            className="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/5 px-3 py-1 text-[11px] font-medium tracking-wide text-cyan-300 transition hover:bg-cyan-400/10 hover:border-cyan-400/50"
+          >
+            <Dna className="h-3.5 w-3.5" />
+            <span>eDNA BLAST Inspector</span>
+          </button>
+
           <button
             type="button"
             onClick={() => setDrawerOpen(true)}
             className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100/90 px-3 py-1 text-[11px] font-medium tracking-wide text-slate-700 transition hover:bg-slate-200 dark:border-white/10 dark:bg-ink-800/80 dark:text-ink-50 dark:hover:bg-white/5 dark:hover:border-white/20"
           >
-            <AlertTriangle className={`h-3.5 w-3.5 ${alertCount > 0 ? "text-amber-500 dark:text-amber-400" : "text-emerald-500 dark:text-emerald-400"}`} />
+            <AlertTriangle
+              className={`h-3.5 w-3.5 ${
+                alertCount > 0
+                  ? "text-amber-500 dark:text-amber-400"
+                  : "text-emerald-500 dark:text-emerald-400"
+              }`}
+            />
+
             <span>Ecosystem Status</span>
+
             <span
               className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
                 alertCount > 0
@@ -121,7 +159,7 @@ export default function Navbar() {
           </button>
         </div>
 
-        {/* Right Section: Perspective Switcher, Theme Toggle & Auth Profile */}
+        {/* Right Section */}
         <div className="flex items-center gap-2">
           {/* Persona Mode Switcher */}
           <div className="flex items-center gap-1 rounded-full border border-slate-200 bg-slate-100 p-1 dark:border-white/10 dark:bg-ink-800">
@@ -137,6 +175,7 @@ export default function Navbar() {
               <Radio className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Researcher</span>
             </button>
+
             <button
               type="button"
               onClick={() => setViewMode("policy")}
@@ -151,32 +190,31 @@ export default function Navbar() {
             </button>
           </div>
 
-          {/* Theme Toggle Button */}
+          {/* Theme Toggle */}
           <ThemeToggle />
 
-          {/* Authentication Badge / Sign In Button */}
+          {/* Authentication */}
           {isAuthenticated ? (
             <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100/90 py-1 pl-1.5 pr-2 backdrop-blur dark:border-white/15 dark:bg-ink-800/90">
-              {/* User Avatar */}
               <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-tr from-cyan-500 to-teal-400 text-[11px] font-black text-ink-950">
                 {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
               </div>
 
-              {/* User Details */}
               <div className="hidden flex-col md:flex">
                 <span className="max-w-[110px] truncate text-xs font-semibold text-slate-800 dark:text-white leading-tight">
                   {user?.name}
                 </span>
+
                 <span className="text-[10px] capitalize leading-none text-cyan-600 dark:text-cyan-300">
                   {user?.role}
                 </span>
               </div>
 
-              {/* Logout Button */}
               <button
                 type="button"
                 onClick={() => {
                   logout();
+
                   pushToast({
                     title: "Signed Out",
                     message: "You have been logged out successfully.",
@@ -202,11 +240,12 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Navigation Links Bar */}
+      {/* Navigation Links */}
       <nav className="flex gap-1 overflow-x-auto px-4 pb-3 md:px-6">
         {PAGES.map((page) => {
           const Icon = page.icon;
           const active = activePage === page.id;
+
           return (
             <button
               key={page.id}
@@ -225,7 +264,19 @@ export default function Navbar() {
         })}
       </nav>
 
-      <EcosystemDrawer isOpen={drawerOpen} onClose={() => setDrawerOpen(false)} onLocate={handleLocate} />
+      <EcosystemDrawer
+        isOpen={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        onLocate={handleLocate}
+        alerts={alertList}
+        isLoading={alertsQuery.isLoading}
+        alertSource={alertsQuery.data?.source}
+      />
+
+      <EdnaInspectorModal
+        isOpen={ednaModalOpen}
+        onClose={() => setEdnaModalOpen(false)}
+      />
     </header>
   );
 }

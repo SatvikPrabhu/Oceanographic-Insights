@@ -49,7 +49,7 @@ function isFasta(name = "") {
 }
 
 export default function DataUploader() {
-  const { pushToast, mapQuery } = useDashboard();
+  const { pushToast, mapQuery, setActivePage } = useDashboard();
   const { user, isAuthenticated, openAuthModal } = useAuth();
   const [tabId, setTabId] = useState("ocean");
   const [dragOver, setDragOver] = useState(false);
@@ -116,6 +116,10 @@ export default function DataUploader() {
         type: "success",
         title: `Parsed ${parsed} records`,
         message: `${result.source || file.name}: inserted ${inserted}${result.skipped ? `, skipped ${result.skipped}` : ""}.`,
+        action: {
+          label: "View on Map",
+          onClick: () => setActivePage("map"),
+        },
       });
       setFile(null);
     } catch (err) {

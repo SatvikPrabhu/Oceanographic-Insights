@@ -1,7 +1,9 @@
-import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { boundsToQuery, DEFAULT_CENTER, DEFAULT_ZOOM, queriesEqual, toLatLng } from "../../lib/geo";
-import { catchIconSize, dnaDivIcon, fishDivIcon } from "../../lib/mapIcons";
+import L from "leaflet";
+import "leaflet.markercluster";
+import { DEFAULT_CENTER, DEFAULT_ZOOM, toLatLng } from "../../lib/geo";
+import { catchIconSize, dnaDivIcon, fishDivIcon, fishClusterIcon, dnaClusterIcon } from "../../lib/mapIcons";
 import HeatmapLayer from "./HeatmapLayer.jsx";
 import WaterEffectsOverlay from "./WaterEffectsOverlay.jsx";
 import { useDashboard } from "../../context/DashboardContext.jsx";
@@ -33,64 +35,101 @@ function LeafletCursorLock({ enabled }) {
   return null;
 }
 
-function BoundsReporter({ onChange }) {
+function FisheriesLayer({ points, onSelect }) {
   const map = useMap();
-  const timer = useRef();
-  const last = useRef(null);
 
   useEffect(() => {
-    const query = boundsToQuery(map);
-    last.current = query;
-    onChange(query);
-  }, [map, onChange]);
+    if (!points || points.length === 0) return;
 
-  useMapEvents({
-    moveend(event) {
-      clearTimeout(timer.current);
-      const query = boundsToQuery(event.target);
-      timer.current = setTimeout(() => {
-        if (queriesEqual(last.current, query)) return;
-        last.current = query;
-        onChange(query);
-      }, 350);
-    },
-  });
+    const clusterGroup = L.markerClusterGroup({
+      maxClusterRadius: 50,
+      disableClusteringAtZoom: 14,
+      iconCreateFunction: (cluster) => {
+        return fishClusterIcon(cluster.getChildCount());
+      }
+    });
+
+    const geoJsonData = {
+      type: "FeatureCollection",
+      features: points.map(pt => {
+        const loc = toLatLng(pt);
+        return loc ? {
+          type: "Feature",
+          geometry: { type: "Point", coordinates: [loc.lng, loc.lat] },
+          properties: { record: pt }
+        } : null;
+      }).filter(Boolean)
+    };
+
+    const geoJsonLayer = L.geoJSON(geoJsonData, {
+      pointToLayer: (feature, latlng) => {
+        const record = feature.properties.record;
+        const size = catchIconSize(record.catchWeightKg);
+        const marker = L.marker(latlng, {
+          icon: fishDivIcon(size, record.catchWeightKg)
+        });
+        marker.on('click', () => onSelect({ origin: { lat: latlng.lat, lng: latlng.lng }, source: "fisheries", record }));
+        return marker;
+      }
+    });
+
+    clusterGroup.addLayer(geoJsonLayer);
+    map.addLayer(clusterGroup);
+
+    return () => {
+      map.removeLayer(clusterGroup);
+    };
+  }, [points, map, onSelect]);
+
   return null;
 }
 
-function FisheriesLayer({ points, onSelect }) {
-  return points.map((point) => {
-    const loc = toLatLng(point);
-    if (!loc) return null;
-    const size = catchIconSize(point.catchWeightKg);
-    return (
-      <Marker
-        key={point._id}
-        position={[loc.lat, loc.lng]}
-        icon={fishDivIcon(size, point.catchWeightKg)}
-        eventHandlers={{
-          click: () => onSelect({ origin: loc, source: "fisheries", record: point }),
-        }}
-      />
-    );
-  });
-}
-
 function EdnaLayer({ points, onSelect }) {
-  return points.map((point) => {
-    const loc = toLatLng(point);
-    if (!loc) return null;
-    return (
-      <Marker
-        key={point._id}
-        position={[loc.lat, loc.lng]}
-        icon={dnaDivIcon(30)}
-        eventHandlers={{
-          click: () => onSelect({ origin: loc, source: "edna", record: point }),
-        }}
-      />
-    );
-  });
+  const map = useMap();
+
+  useEffect(() => {
+    if (!points || points.length === 0) return;
+
+    const clusterGroup = L.markerClusterGroup({
+      maxClusterRadius: 45,
+      disableClusteringAtZoom: 13,
+      iconCreateFunction: (cluster) => {
+        return dnaClusterIcon(cluster.getChildCount());
+      }
+    });
+
+    const geoJsonData = {
+      type: "FeatureCollection",
+      features: points.map(pt => {
+        const loc = toLatLng(pt);
+        return loc ? {
+          type: "Feature",
+          geometry: { type: "Point", coordinates: [loc.lng, loc.lat] },
+          properties: { record: pt }
+        } : null;
+      }).filter(Boolean)
+    };
+
+    const geoJsonLayer = L.geoJSON(geoJsonData, {
+      pointToLayer: (feature, latlng) => {
+        const record = feature.properties.record;
+        const marker = L.marker(latlng, {
+          icon: dnaDivIcon(30)
+        });
+        marker.on('click', () => onSelect({ origin: { lat: latlng.lat, lng: latlng.lng }, source: "edna", record }));
+        return marker;
+      }
+    });
+
+    clusterGroup.addLayer(geoJsonLayer);
+    map.addLayer(clusterGroup);
+
+    return () => {
+      map.removeLayer(clusterGroup);
+    };
+  }, [points, map, onSelect]);
+
+  return null;
 }
 
 function MapController({ center, zoom }) {
@@ -113,6 +152,8 @@ export default function OceanMap({ ocean, fisheries, edna, layers, onSelect, onB
   const [boatEffects, setBoatEffects] = useState(true);
   const wrapRef = useRef(null);
 
+  // Disabled onBoundsChange to prevent API thrashing and full React re-renders
+
   return (
     <div
       ref={wrapRef}
@@ -121,9 +162,10 @@ export default function OceanMap({ ocean, fisheries, edna, layers, onSelect, onB
       <MapContainer
         center={[DEFAULT_CENTER.lat, DEFAULT_CENTER.lng]}
         zoom={DEFAULT_ZOOM}
-        minZoom={4}
-        maxZoom={12}
+        minZoom={3}
+        maxZoom={16}
         scrollWheelZoom
+        preferCanvas={true}
         className={`h-full w-full ${boatEffects ? "leaflet-boat-cursor" : ""}`}
       >
         <TileLayer
@@ -132,7 +174,6 @@ export default function OceanMap({ ocean, fisheries, edna, layers, onSelect, onB
         />
         <MapController center={mapCenter} zoom={mapZoom} />
         <LeafletCursorLock enabled={boatEffects} />
-        <BoundsReporter onChange={onBoundsChange} />
         {layers.ocean && <HeatmapLayer points={oceanPoints} onSelect={onSelect} />}
         {layers.fisheries && <FisheriesLayer points={fishPoints} onSelect={onSelect} />}
         {layers.edna && <EdnaLayer points={ednaPoints} onSelect={onSelect} />}

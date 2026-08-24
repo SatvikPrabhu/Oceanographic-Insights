@@ -17,7 +17,7 @@ function LayerToggle({ checked, onChange, icon: Icon, title, hint, accent, count
             <Icon className={`h-4 w-4 ${accent}`} />
             {title}
           </span>
-          {typeof count === "number" && (
+          {count != null && (
             <span className="rounded-full bg-[#91d8e3] px-2 py-0.5 font-mono text-[10px] font-bold text-cyan-950 dark:bg-white/5 dark:text-ink-400">
               {count}
             </span>

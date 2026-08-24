@@ -1,6 +1,5 @@
-import { AlertTriangle, MapPin, X } from "lucide-react";
+import { AlertTriangle, Database, FileJson, Loader2, MapPin, X } from "lucide-react";
 import { createPortal } from "react-dom";
-import mockAlerts from "../../data/mockAlerts.json";
 
 const severityColors = {
   critical: "border-rose-500/50 bg-rose-100/60 dark:bg-rose-500/10",
@@ -20,11 +19,11 @@ const severityBadge = {
 
 function AlertCard({ alert, onLocate }) {
   return (
-    <div className={`rounded-xl border p-5 shadow-sm ${severityColors[alert.severity]}`}>
+    <div className={`rounded-xl border p-5 shadow-sm ${severityColors[alert.severity] || severityColors.warning}`}>
       <div className="flex items-start justify-between gap-4 mb-4">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
-            <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-black uppercase tracking-wide ${severityBadge[alert.severity]}`}>
+            <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-black uppercase tracking-wide ${severityBadge[alert.severity] || severityBadge.warning}`}>
               <AlertTriangle className="h-3.5 w-3.5" />
               {alert.severity}
             </span>
@@ -35,7 +34,7 @@ function AlertCard({ alert, onLocate }) {
             <MapPin className="h-3.5 w-3.5" />
             <span>{alert.location}</span>
             <span className="text-slate-400 dark:text-ink-500">|</span>
-            <span>Lat {alert.coordinates.lat}, Lng {alert.coordinates.lng}</span>
+            <span>Lat {alert.coordinates?.lat}, Lng {alert.coordinates?.lng}</span>
           </div>
           <div className="grid gap-2.5">
             <div>
@@ -51,8 +50,9 @@ function AlertCard({ alert, onLocate }) {
       </div>
       <button
         type="button"
-        onClick={() => onLocate(alert.coordinates)}
-        className="w-full rounded-lg border border-cyan-800/40 bg-cyan-800/15 px-4 py-2 text-xs font-bold text-cyan-950 transition hover:bg-cyan-800 hover:text-white dark:border-cyan-400/40 dark:bg-cyan-400/10 dark:text-cyan-300 dark:hover:bg-cyan-400/20"
+        onClick={() => alert.coordinates && onLocate(alert.coordinates)}
+        disabled={!alert.coordinates}
+        className="w-full rounded-lg border border-cyan-800/40 bg-cyan-800/15 px-4 py-2 text-xs font-bold text-cyan-950 transition hover:bg-cyan-800 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed dark:border-cyan-400/40 dark:bg-cyan-400/10 dark:text-cyan-300 dark:hover:bg-cyan-400/20"
       >
         Locate on Map
       </button>
@@ -60,9 +60,7 @@ function AlertCard({ alert, onLocate }) {
   );
 }
 
-export default function EcosystemDrawer({ isOpen, onClose, onLocate }) {
-  const alertList = Array.isArray(mockAlerts) ? mockAlerts : mockAlerts.alerts || [];
-
+export default function EcosystemDrawer({ isOpen, onClose, onLocate, alerts = [], isLoading, alertSource }) {
   if (!isOpen) return null;
 
   const drawerContent = (
@@ -86,8 +84,31 @@ export default function EcosystemDrawer({ isOpen, onClose, onLocate }) {
           </button>
         </div>
 
+        {/* Source indicator badge */}
+        {alertSource && (
+          <div className="px-6 pt-3 shrink-0">
+            <div className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${
+              alertSource === "database"
+                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 dark:bg-emerald-400/10 dark:border-emerald-400/20"
+                : "border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-400 dark:bg-amber-400/10 dark:border-amber-400/20"
+            }`}>
+              {alertSource === "database" ? (
+                <><Database className="h-3 w-3" /> Live from MongoDB</>
+              ) : (
+                <><FileJson className="h-3 w-3" /> Demo Fallback Data</>
+              )}
+            </div>
+          </div>
+        )}
+
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          {alertList.length === 0 ? (
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center h-full text-center">
+              <Loader2 className="h-8 w-8 text-cyan-600 dark:text-cyan-400 animate-spin mb-3" />
+              <p className="text-sm font-bold text-[#042430] dark:text-ink-200">Scanning ocean databases…</p>
+              <p className="text-xs font-semibold text-[#083344] dark:text-ink-400 mt-1">Checking for thermal anomalies & hypoxic zones</p>
+            </div>
+          ) : alerts.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <div className="h-12 w-12 rounded-full bg-emerald-500/20 flex items-center justify-center mb-3">
                 <AlertTriangle className="h-6 w-6 text-emerald-800 dark:text-emerald-400" />
@@ -96,7 +117,7 @@ export default function EcosystemDrawer({ isOpen, onClose, onLocate }) {
               <p className="text-xs font-semibold text-[#083344] dark:text-ink-400 mt-1">System operating within normal parameters</p>
             </div>
           ) : (
-            alertList.map((alert) => (
+            alerts.map((alert) => (
               <AlertCard key={alert.id} alert={alert} onLocate={onLocate} />
             ))
           )}

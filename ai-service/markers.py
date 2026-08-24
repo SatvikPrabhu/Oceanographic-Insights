@@ -7,6 +7,7 @@ class MarkerProfile(TypedDict):
     scientificName: str
     markerType: str
     motifs: List[str]
+    conservationStatus: str
 
 
 MARINE_SPECIES_MARKERS: Dict[str, MarkerProfile] = {
@@ -18,6 +19,7 @@ MARINE_SPECIES_MARKERS: Dict[str, MarkerProfile] = {
             "TTGGGTGAGGAGGA",
             "ACGGGGAATAACAG",
         ],
+        "conservationStatus": "Least Concern",
     },
     "Sardine": {
         "scientificName": "Sardinella longiceps",
@@ -27,6 +29,7 @@ MARINE_SPECIES_MARKERS: Dict[str, MarkerProfile] = {
             "TAGTCCACGCCGTA",
             "AAGGTGGCTTGGTA",
         ],
+        "conservationStatus": "Least Concern",
     },
     "Tuna": {
         "scientificName": "Thunnus albacares",
@@ -36,6 +39,7 @@ MARINE_SPECIES_MARKERS: Dict[str, MarkerProfile] = {
             "CTAGCCGCAGGCATC",
             "TTCGGGCCTGAACTC",
         ],
+        "conservationStatus": "Near Threatened",
     },
     "Hilsa": {
         "scientificName": "Tenualosa ilisha",
@@ -44,6 +48,7 @@ MARINE_SPECIES_MARKERS: Dict[str, MarkerProfile] = {
             "GTCGAACGGTAACAG",
             "CCTGGCTCAGGATGA",
         ],
+        "conservationStatus": "Least Concern",
     },
     "Indian Prawn": {
         "scientificName": "Penaeus indicus",
@@ -52,5 +57,6 @@ MARINE_SPECIES_MARKERS: Dict[str, MarkerProfile] = {
             "TGGTCGGTGCAGAA",
             "CGAGGCTCAGCGTA",
         ],
+        "conservationStatus": "Data Deficient",
     },
 }

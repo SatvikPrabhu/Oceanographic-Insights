@@ -1,4 +1,4 @@
-import { CheckCircle2, TriangleAlert, X } from "lucide-react";
+import { ArrowRight, CheckCircle2, TriangleAlert, X } from "lucide-react";
 import { useDashboard } from "../../context/DashboardContext";
 
 export default function ToastHost() {
@@ -23,6 +23,19 @@ export default function ToastHost() {
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-white">{toast.title}</p>
               {toast.message && <p className="mt-0.5 text-xs text-ink-400">{toast.message}</p>}
+              {toast.action && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    toast.action.onClick();
+                    dismissToast(toast.id);
+                  }}
+                  className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-emerald-500/20 px-3 py-1.5 text-xs font-semibold text-emerald-200 transition hover:bg-emerald-500/30"
+                >
+                  {toast.action.label}
+                  <ArrowRight className="h-3 w-3" />
+                </button>
+              )}
             </div>
             <button
               type="button"
