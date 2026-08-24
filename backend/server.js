@@ -10,6 +10,7 @@ const { connectRedis, isRedisReady } = require("./config/redis");
 const { notFound, errorHandler } = require("./middleware/errorHandler");
 const ingestRoutes = require("./routes/ingestRoutes");
 const dataRoutes = require("./routes/dataRoutes");
+const policyRoutes = require("./routes/policyRoutes");
 const aiRoutes = require("./routes/aiRoutes");
 const authRoutes = require("./routes/authRoutes");
 
@@ -58,6 +59,7 @@ app.get("/api/health", async (_req, res, next) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/ingest", ingestRoutes);
 app.use("/api/data", dataRoutes);
+app.use("/api/policy", policyRoutes);
 app.use("/api", aiRoutes);
 
 app.use(notFound);
