@@ -5,6 +5,7 @@ import MapWorkspace from "./components/map/MapWorkspace.jsx";
 import DataUploader from "./components/upload/DataUploader.jsx";
 import AnalyticsPanel from "./components/analytics/AnalyticsPanel.jsx";
 import UserProfile from "./components/auth/UserProfile.jsx";
+import PolicyMakerPanel from "./components/policy/PolicyMakerPanel.jsx";
 import ToastHost from "./components/ui/ToastHost.jsx";
 import AuthModal from "./components/auth/AuthModal.jsx";
 import { DashboardProvider, useDashboard } from "./context/DashboardContext.jsx";
@@ -57,6 +58,7 @@ function Dashboard() {
           summary={summary}
         />
       )}
+      {activePage === "policy" && <PolicyMakerPanel />}
       {activePage === "ingest" && <DataUploader />}
       {activePage === "analytics" && (
         <AnalyticsPanel

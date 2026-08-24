@@ -1,4 +1,4 @@
-import { Dna, Fish, Thermometer } from "lucide-react";
+import { AlertTriangle, Dna, Fish, Thermometer } from "lucide-react";
 import { SPECIES_OPTIONS } from "../../lib/species";
 import { useDashboard } from "../../context/DashboardContext";
 
@@ -52,6 +52,14 @@ export default function Sidebar({ extraSpecies = [], layerCounts = {} }) {
           Spatial layers
         </p>
         <div className="space-y-2">
+          <LayerToggle
+            checked={layers.spatialConflicts}
+            onChange={(spatialConflicts) => setLayers((prev) => ({ ...prev, spatialConflicts }))}
+            icon={AlertTriangle}
+            title="Spatial Conflicts"
+            hint="Overlaps of fishing & eDNA hotspots"
+            accent="text-rose-800 dark:text-rose-400"
+          />
           <LayerToggle
             checked={layers.ocean}
             onChange={(ocean) => setLayers((prev) => ({ ...prev, ocean }))}

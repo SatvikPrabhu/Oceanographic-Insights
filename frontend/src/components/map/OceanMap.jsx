@@ -7,7 +7,9 @@ import { DEFAULT_CENTER, DEFAULT_ZOOM, toLatLng, boundsToQuery } from "../../lib
 import { catchIconSize, dnaDivIcon, fishDivIcon, fishClusterIcon, dnaClusterIcon } from "../../lib/mapIcons";
 import HeatmapLayer from "./HeatmapLayer.jsx";
 import WaterEffectsOverlay from "./WaterEffectsOverlay.jsx";
+import SpatialConflictOverlay from "./SpatialConflictOverlay.jsx";
 import { useDashboard } from "../../context/DashboardContext.jsx";
+import { useSpatialConflicts } from "../../hooks/usePolicyApi.js";
 
 const BASEMAPS = {
   dark: {
@@ -273,8 +275,9 @@ function MapBoundsHandler({ onBoundsChange }) {
   return null;
 }
 
-export default function OceanMap({ ocean, fisheries, edna, layers, onSelect, onBoundsChange }) {
+export default function OceanMap({ ocean, fisheries, edna, layers = {}, onSelect, onBoundsChange }) {
   const { mapCenter, mapZoom, setMapViewport } = useDashboard();
+  const spatialConflictsQuery = useSpatialConflicts();
   const oceanPoints = useMemo(() => ocean || [], [ocean]);
   const fishPoints = useMemo(() => fisheries || [], [fisheries]);
   const ednaPoints = useMemo(() => edna || [], [edna]);
@@ -287,6 +290,7 @@ export default function OceanMap({ ocean, fisheries, edna, layers, onSelect, onB
 
   return (
     <div
+      id="leaflet-map-container"
       ref={wrapRef}
       className={`relative h-full w-full overflow-hidden ${
         boatEffects ? "ocean-map-boat" : "ocean-map-boat-off cursor-grab"
@@ -309,6 +313,12 @@ export default function OceanMap({ ocean, fisheries, edna, layers, onSelect, onB
         <MapResizeHandler />
         <MapController center={mapCenter} zoom={mapZoom} />
         <MapBoundsHandler onBoundsChange={onBoundsChange} />
+        {layers.spatialConflicts && (
+          <SpatialConflictOverlay
+            conflictCells={spatialConflictsQuery?.data?.conflictCells}
+            visible={layers.spatialConflicts}
+          />
+        )}
         {layers.ocean && <HeatmapLayer points={oceanPoints} onSelect={onSelect} />}
         {layers.fisheries && <FisheriesLayer points={fishPoints} onSelect={onSelect} />}
         {layers.edna && <EdnaLayer points={ednaPoints} onSelect={onSelect} />}
