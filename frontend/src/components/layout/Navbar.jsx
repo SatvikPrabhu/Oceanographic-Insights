@@ -111,7 +111,7 @@ export default function Navbar() {
 
           <div className="min-w-0">
             <p className="truncate text-sm font-bold tracking-tight text-slate-900 dark:text-white">
-              ThalassaGIS - AI Ocean Platform
+              PosAIdon
             </p>
 
             <p className="flex items-center gap-1 text-[11px] uppercase tracking-[0.16em] text-cyan-700 dark:text-cyan-200/70">
