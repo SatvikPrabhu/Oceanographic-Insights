@@ -148,27 +148,6 @@ function MapController({ center, zoom }) {
   return null;
 }
 
-<<<<<<< Updated upstream
-function MapBoundsHandler({ onBoundsChange }) {
-  const map = useMap();
-
-  useEffect(() => {
-    if (!onBoundsChange) return;
-
-    const updateBounds = () => {
-      const query = boundsToQuery(map);
-      onBoundsChange(query);
-    };
-
-    map.on("moveend", updateBounds);
-    map.on("zoomend", updateBounds);
-
-    return () => {
-      map.off("moveend", updateBounds);
-      map.off("zoomend", updateBounds);
-    };
-  }, [map, onBoundsChange]);
-
 export default function OceanMap({
   ocean,
   fisheries,
