@@ -26,7 +26,7 @@ export default function OceanShipCanvas() {
       targetY: height * 0.65,
       angle: -Math.PI / 2, // start pointing North (-Y)
       speed: 0,
-      maxSpeed: 4.8,
+      maxSpeed: 1.8,
       size: 72, // Ship rendering size
     };
 
@@ -123,8 +123,8 @@ export default function OceanShipCanvas() {
         ship.angle += diff * 0.085;
 
         // Accelerate smoothly based on distance
-        const targetSpeed = Math.min(dist * 0.06, ship.maxSpeed);
-        ship.speed += (targetSpeed - ship.speed) * 0.08;
+        const targetSpeed = Math.min(dist * 0.03, ship.maxSpeed);
+        ship.speed += (targetSpeed - ship.speed) * 0.04;
 
         // Move forward along current heading
         ship.x += Math.cos(ship.angle) * ship.speed;
