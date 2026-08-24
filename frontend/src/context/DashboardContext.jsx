@@ -10,6 +10,7 @@ export function DashboardProvider({ children }) {
     ocean: true,
     fisheries: true,
     edna: true,
+    spatialConflicts: true,
   });
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");

@@ -24,6 +24,12 @@ const PAGES = [
   { id: "home", label: "Home", icon: Compass, protected: false },
   { id: "map", label: "Interactive Map", icon: Map, protected: false },
   {
+    id: "policy",
+    label: "Policy Maker & Governance",
+    icon: Shield,
+    protected: false,
+  },
+  {
     id: "ingest",
     label: "Ingestion Portal",
     icon: Upload,
@@ -165,7 +171,10 @@ export default function Navbar() {
           <div className="flex items-center gap-1 rounded-full border border-slate-200 bg-slate-100 p-1 dark:border-white/10 dark:bg-ink-800">
             <button
               type="button"
-              onClick={() => setViewMode("researcher")}
+              onClick={() => {
+                setViewMode("researcher");
+                if (activePage === "policy") setActivePage("map");
+              }}
               className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition ${
                 viewMode === "researcher"
                   ? "bg-cyan-500 text-white dark:bg-cyan-400 dark:text-ink-950 font-bold shadow-sm"
@@ -178,7 +187,10 @@ export default function Navbar() {
 
             <button
               type="button"
-              onClick={() => setViewMode("policy")}
+              onClick={() => {
+                setViewMode("policy");
+                setActivePage("policy");
+              }}
               className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition ${
                 viewMode === "policy"
                   ? "bg-amber-500 text-white dark:bg-amber-300 dark:text-ink-950 font-bold shadow-sm"
