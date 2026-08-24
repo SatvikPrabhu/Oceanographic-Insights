@@ -118,7 +118,7 @@ export default function AuthModal() {
       const res = await signup({ name, email, password, role });
       pushToast({
         title: "Account created!",
-        message: `Welcome to ThalassaGIS, ${res.user.name}!`,
+        message: `Welcome to PosAIdon, ${res.user.name}!`,
         type: "success",
       });
 
@@ -198,7 +198,7 @@ export default function AuthModal() {
           </div>
           <div>
             <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
-              ThalassaGIS Access Portal
+              PosAIdon Access Portal
             </h2>
             <p className="text-xs text-cyan-700 dark:text-cyan-200/70">Unified Marine Intelligence & Security</p>
           </div>
@@ -469,7 +469,7 @@ export default function AuthModal() {
               ) : (
                 <>
                   <CheckCircle2 className="h-4 w-4" />
-                  Create ThalassaGIS Account
+                  Create PosAIdon Account
                 </>
               )}
             </button>
