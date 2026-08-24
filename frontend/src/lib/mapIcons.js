@@ -38,26 +38,26 @@ export function catchIconSize(weightKg) {
 }
 
 export function fishClusterIcon(count) {
-  const size = Math.min(60, 30 + count * 2);
+  const size = Math.min(54, 34 + Math.min(count, 30));
   const text = count >= 1000 ? (count / 1000).toFixed(1) + 'k' : count;
   return L.divIcon({
     className: "thalassa-cluster",
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
-    html: `<div style="width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(16,185,129,0.2);border:2px solid rgba(6,182,212,0.8);box-shadow:0 0 15px rgba(6,182,212,0.6);color:#cffafe;font-weight:bold;font-size:12px;">
+    html: `<div style="width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(8,51,68,0.92);border:2px solid #06b6d4;box-shadow:0 0 14px rgba(6,182,212,0.8), inset 0 0 6px rgba(6,182,212,0.4);color:#ffffff;font-weight:800;font-size:12px;cursor:pointer;">
       ${text}
     </div>`,
   });
 }
 
 export function dnaClusterIcon(count) {
-  const size = Math.min(55, 30 + count * 1.5);
+  const size = Math.min(54, 34 + Math.min(count, 30));
   const text = count >= 1000 ? (count / 1000).toFixed(1) + 'k' : count;
   return L.divIcon({
     className: "thalassa-cluster",
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
-    html: `<div style="width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(168,85,247,0.2);border:2px solid rgba(139,92,246,0.8);box-shadow:0 0 15px rgba(139,92,246,0.6);color:#f3e8ff;font-weight:bold;font-size:12px;">
+    html: `<div style="width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(49,10,70,0.92);border:2px solid #d946ef;box-shadow:0 0 14px rgba(217,70,239,0.8), inset 0 0 6px rgba(217,70,239,0.4);color:#ffffff;font-weight:800;font-size:12px;cursor:pointer;">
       ${text}
     </div>`,
   });
