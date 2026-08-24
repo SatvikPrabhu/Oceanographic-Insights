@@ -118,7 +118,7 @@ export default function AuthModal() {
       const res = await signup({ name, email, password, role });
       pushToast({
         title: "Account created!",
-        message: `Welcome to PosAIdon, ${res.user.name}!`,
+        message: `Welcome to posAIdon, ${res.user.name}!`,
         type: "success",
       });
 
@@ -198,7 +198,7 @@ export default function AuthModal() {
           </div>
           <div>
             <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
-              PosAIdon Access Portal
+              pos<span className="text-cyan-600 dark:text-cyan-400">AI</span>don Access Portal
             </h2>
             <p className="text-xs text-cyan-700 dark:text-cyan-200/70">Unified Marine Intelligence & Security</p>
           </div>
@@ -274,7 +274,7 @@ export default function AuthModal() {
                     setEmail(e.target.value);
                     if (error) setError("");
                   }}
-                  placeholder="researcher@thalassagis.io"
+                  placeholder="researcher@posaidon.io"
                   className={`w-full rounded-xl border py-2.5 pl-9 pr-3 text-xs transition-colors focus:outline-none focus:ring-1 ${
                     showEmailError
                       ? "border-rose-400 bg-rose-50/50 text-slate-900 focus:border-rose-500 focus:ring-rose-500 dark:border-rose-500/60 dark:bg-rose-950/20 dark:text-white"
@@ -469,7 +469,7 @@ export default function AuthModal() {
               ) : (
                 <>
                   <CheckCircle2 className="h-4 w-4" />
-                  Create PosAIdon Account
+                  Create posAIdon Account
                 </>
               )}
             </button>

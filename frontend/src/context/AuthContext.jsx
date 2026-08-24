@@ -4,9 +4,9 @@ import { api } from "../api/client";
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [token, setToken] = useState(() => localStorage.getItem("thalassa_token") || null);
+  const [token, setToken] = useState(() => localStorage.getItem("posaidon_token") || localStorage.getItem("thalassa_token") || null);
   const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem("thalassa_user");
+    const saved = localStorage.getItem("posaidon_user") || localStorage.getItem("thalassa_user");
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -24,7 +24,7 @@ export function AuthProvider({ children }) {
   // Validate stored token on mount
   useEffect(() => {
     async function verifySession() {
-      const storedToken = localStorage.getItem("thalassa_token");
+      const storedToken = localStorage.getItem("posaidon_token") || localStorage.getItem("thalassa_token");
       if (!storedToken) {
         setLoading(false);
         return;
@@ -34,10 +34,12 @@ export function AuthProvider({ children }) {
         const { data } = await api.get("/auth/me");
         if (data?.user) {
           setUser(data.user);
-          localStorage.setItem("thalassa_user", JSON.stringify(data.user));
+          localStorage.setItem("posaidon_user", JSON.stringify(data.user));
         }
       } catch (err) {
         console.warn("Stored session invalid or expired:", err.message);
+        localStorage.removeItem("posaidon_token");
+        localStorage.removeItem("posaidon_user");
         localStorage.removeItem("thalassa_token");
         localStorage.removeItem("thalassa_user");
         setToken(null);
@@ -55,8 +57,10 @@ export function AuthProvider({ children }) {
       setUser(null);
     }
 
+    window.addEventListener("posaidon_unauthorized", handleUnauthorized);
     window.addEventListener("thalassa_unauthorized", handleUnauthorized);
     return () => {
+      window.removeEventListener("posaidon_unauthorized", handleUnauthorized);
       window.removeEventListener("thalassa_unauthorized", handleUnauthorized);
     };
   }, []);
@@ -76,8 +80,8 @@ export function AuthProvider({ children }) {
   const handleAuthSuccess = useCallback((userData, authToken) => {
     setUser(userData);
     setToken(authToken);
-    localStorage.setItem("thalassa_token", authToken);
-    localStorage.setItem("thalassa_user", JSON.stringify(userData));
+    localStorage.setItem("posaidon_token", authToken);
+    localStorage.setItem("posaidon_user", JSON.stringify(userData));
     closeAuthModal();
   }, [closeAuthModal]);
 
@@ -90,8 +94,8 @@ export function AuthProvider({ children }) {
     throw new Error("Invalid response from login server");
   }, [handleAuthSuccess]);
 
-  const signup = useCallback(async (formData) => {
-    const { data } = await api.post("/auth/signup", formData);
+  const signup = useCallback(async (userData) => {
+    const { data } = await api.post("/auth/signup", userData);
     if (data?.token && data?.user) {
       handleAuthSuccess(data.user, data.token);
       return data;
@@ -99,8 +103,8 @@ export function AuthProvider({ children }) {
     throw new Error("Invalid response from registration server");
   }, [handleAuthSuccess]);
 
-  const demoLogin = useCallback(async (role = "researcher") => {
-    const { data } = await api.post("/auth/demo", { role });
+  const demoLogin = useCallback(async (role) => {
+    const { data } = await api.post("/auth/demo-login", { role });
     if (data?.token && data?.user) {
       handleAuthSuccess(data.user, data.token);
       return data;
@@ -110,7 +114,7 @@ export function AuthProvider({ children }) {
 
   const updateUser = useCallback((updatedUserData) => {
     setUser(updatedUserData);
-    localStorage.setItem("thalassa_user", JSON.stringify(updatedUserData));
+    localStorage.setItem("posaidon_user", JSON.stringify(updatedUserData));
   }, []);
 
   const updateProfile = useCallback(async (profileData) => {
@@ -158,6 +162,8 @@ export function AuthProvider({ children }) {
   }, [updateUser]);
 
   const logout = useCallback(() => {
+    localStorage.removeItem("posaidon_token");
+    localStorage.removeItem("posaidon_user");
     localStorage.removeItem("thalassa_token");
     localStorage.removeItem("thalassa_user");
     setToken(null);

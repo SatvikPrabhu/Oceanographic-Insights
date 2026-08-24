@@ -500,7 +500,7 @@ export default function UserProfile() {
             <div className="mb-6">
               <h2 className="text-lg font-bold text-white">Personal Information</h2>
               <p className="text-xs text-slate-400 dark:text-ink-300">
-                Update your display name and contact email address associated with ThalassaGIS.
+                Update your display name and contact email address associated with posAIdon.
               </p>
             </div>
 
@@ -893,7 +893,7 @@ export default function UserProfile() {
             </div>
 
             <div className="border-t border-slate-800 pt-4 flex justify-between items-center dark:border-white/10">
-              <span className="text-xs text-slate-500">Need elevated organization or admin credentials? Contact support@thalassagis.io</span>
+              <span className="text-xs text-slate-500">Need elevated organization or admin credentials? Contact support@posaidon.io</span>
               <button
                 type="button"
                 onClick={() => {
