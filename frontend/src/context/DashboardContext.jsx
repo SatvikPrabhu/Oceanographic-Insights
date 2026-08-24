@@ -7,6 +7,8 @@ export function DashboardProvider({ children }) {
   const [viewMode, setViewMode] = useState("researcher");
   const [activePage, setActivePage] = useState("home");
   const [layers, setLayers] = useState({
+    hotspots: true,
+    mpa: true,
     ocean: true,
     fisheries: true,
     edna: true,

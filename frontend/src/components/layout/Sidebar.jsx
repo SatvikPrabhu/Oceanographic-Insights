@@ -1,4 +1,4 @@
-import { AlertTriangle, Dna, Fish, Thermometer } from "lucide-react";
+import { AlertTriangle, Dna, Fish, Shield, Thermometer, Zap } from "lucide-react";
 import { SPECIES_OPTIONS } from "../../lib/species";
 import { useDashboard } from "../../context/DashboardContext";
 
@@ -29,7 +29,7 @@ function LayerToggle({ checked, onChange, icon: Icon, title, hint, accent, count
   );
 }
 
-export default function Sidebar({ extraSpecies = [], layerCounts = {} }) {
+export default function Sidebar({ layerCounts = {}, extraSpecies = [] }) {
   const {
     layers,
     setLayers,
@@ -53,13 +53,33 @@ export default function Sidebar({ extraSpecies = [], layerCounts = {} }) {
         </p>
         <div className="space-y-2">
           <LayerToggle
-            checked={layers.spatialConflicts}
-            onChange={(spatialConflicts) => setLayers((prev) => ({ ...prev, spatialConflicts }))}
-            icon={AlertTriangle}
-            title="Spatial Conflicts"
-            hint="Overlaps of fishing & eDNA hotspots"
-            accent="text-rose-800 dark:text-rose-400"
+            checked={layers.hotspots ?? true}
+            onChange={(hotspots) => setLayers((prev) => ({ ...prev, hotspots }))}
+            icon={Zap}
+            title="AI Marine Hotspots"
+            hint="Multi-signal overlap (SST + Catch + eDNA)"
+            accent="text-amber-600 dark:text-amber-400"
+            count="AI"
           />
+          <LayerToggle
+            checked={layers.mpa ?? true}
+            onChange={(mpa) => setLayers((prev) => ({ ...prev, mpa }))}
+            icon={Shield}
+            title="Marine Protected Areas (MPA)"
+            hint="Ecological sanctuary boundaries & buffer zones"
+            accent="text-emerald-700 dark:text-emerald-400"
+            count="MPA"
+          />
+          {layers.spatialConflicts !== undefined && (
+            <LayerToggle
+              checked={layers.spatialConflicts}
+              onChange={(spatialConflicts) => setLayers((prev) => ({ ...prev, spatialConflicts }))}
+              icon={AlertTriangle}
+              title="Spatial Conflicts"
+              hint="Overlaps of fishing & eDNA hotspots"
+              accent="text-rose-800 dark:text-rose-400"
+            />
+          )}
           <LayerToggle
             checked={layers.ocean}
             onChange={(ocean) => setLayers((prev) => ({ ...prev, ocean }))}

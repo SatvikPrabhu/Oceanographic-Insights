@@ -3,7 +3,9 @@ import {
   AlertTriangle,
   BarChart3,
   Compass,
+  Database,
   Dna,
+  FileText,
   KeyRound,
   LogOut,
   Map,
@@ -17,6 +19,8 @@ import { useDashboard } from "../../context/DashboardContext";
 import { useAuth } from "../../context/AuthContext";
 import EcosystemDrawer from "./EcosystemDrawer.jsx";
 import EdnaInspectorModal from "../edna/EdnaInspectorModal.jsx";
+import DataLineageModal from "../provenance/DataLineageModal.jsx";
+import ExecutiveReportModal from "../report/ExecutiveReportModal.jsx";
 import ThemeToggle from "../ui/ThemeToggle.jsx";
 import { useAlerts } from "../../hooks/useOceanApi";
 
@@ -58,6 +62,8 @@ export default function Navbar() {
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [ednaModalOpen, setEdnaModalOpen] = useState(false);
+  const [lineageModalOpen, setLineageModalOpen] = useState(false);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
 
   const alertsQuery = useAlerts();
   const alertList = alertsQuery.data?.alerts || [];
@@ -127,8 +133,26 @@ export default function Navbar() {
           </div>
         </button>
 
-        {/* eDNA & Ecosystem Status */}
+        {/* Report, eDNA, Lineage & Ecosystem Status */}
         <div className="hidden items-center gap-2 lg:flex">
+          <button
+            type="button"
+            onClick={() => setReportModalOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/40 bg-amber-400/10 px-3 py-1 text-[11px] font-black tracking-wide text-amber-300 transition hover:bg-amber-400/20 hover:border-amber-400/60 shadow-sm"
+          >
+            <FileText className="h-3.5 w-3.5 text-amber-400" />
+            <span>Executive Briefing</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setLineageModalOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-full border border-teal-400/30 bg-teal-400/5 px-3 py-1 text-[11px] font-medium tracking-wide text-teal-300 transition hover:bg-teal-400/10 hover:border-teal-400/50"
+          >
+            <Database className="h-3.5 w-3.5" />
+            <span>Data Lineage</span>
+          </button>
+
           <button
             type="button"
             onClick={() => setEdnaModalOpen(true)}
@@ -311,6 +335,17 @@ export default function Navbar() {
         isOpen={ednaModalOpen}
         onClose={() => setEdnaModalOpen(false)}
       />
+
+      {lineageModalOpen && (
+        <DataLineageModal onClose={() => setLineageModalOpen(false)} />
+      )}
+
+      {reportModalOpen && (
+        <ExecutiveReportModal
+          isOpen={reportModalOpen}
+          onClose={() => setReportModalOpen(false)}
+        />
+      )}
     </header>
   );
 }

@@ -8,6 +8,7 @@ import UserProfile from "./components/auth/UserProfile.jsx";
 import PolicyMakerPanel from "./components/policy/PolicyMakerPanel.jsx";
 import ToastHost from "./components/ui/ToastHost.jsx";
 import AuthModal from "./components/auth/AuthModal.jsx";
+import ProtectedRoute from "./components/auth/ProtectedRoute.jsx";
 import { DashboardProvider, useDashboard } from "./context/DashboardContext.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { ThemeProvider } from "./context/ThemeContext.jsx";
@@ -59,7 +60,11 @@ function Dashboard() {
         />
       )}
       {activePage === "policy" && <PolicyMakerPanel />}
-      {activePage === "ingest" && <DataUploader />}
+      {activePage === "ingest" && (
+        <ProtectedRoute roleRequired="researcher" pageTitle="Data Ingestion Portal" pageId="ingest">
+          <DataUploader />
+        </ProtectedRoute>
+      )}
       {activePage === "analytics" && (
         <AnalyticsPanel
           ocean={ocean}
@@ -70,7 +75,11 @@ function Dashboard() {
           demo={payload?.demo}
         />
       )}
-      {activePage === "profile" && <UserProfile />}
+      {activePage === "profile" && (
+        <ProtectedRoute pageTitle="User Profile" pageId="profile">
+          <UserProfile />
+        </ProtectedRoute>
+      )}
     </div>
   );
 }

@@ -18,6 +18,7 @@ require("./models/User");
 require("./models/OceanData");
 require("./models/FisheryData");
 require("./models/EdnaData");
+require("./models/Dataset");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
