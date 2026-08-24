@@ -195,20 +195,39 @@ export default function Navbar() {
 
           {/* Authentication */}
           {isAuthenticated ? (
-            <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100/90 py-1 pl-1.5 pr-2 backdrop-blur dark:border-white/15 dark:bg-ink-800/90">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-tr from-cyan-500 to-teal-400 text-[11px] font-black text-ink-950">
-                {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
-              </div>
+            <div className={`flex items-center gap-1 rounded-full border py-1 pl-1.5 pr-2 backdrop-blur transition-all ${
+              activePage === "profile"
+                ? "border-cyan-400/80 bg-cyan-500/15 ring-2 ring-cyan-400/30 dark:border-cyan-400/80 dark:bg-cyan-400/20"
+                : "border-slate-200 bg-slate-100/90 hover:border-cyan-400/50 dark:border-white/15 dark:bg-ink-800/90 dark:hover:border-cyan-400/40"
+            }`}>
+              <button
+                type="button"
+                onClick={() => setActivePage("profile")}
+                className="flex items-center gap-2 group text-left cursor-pointer focus:outline-none"
+                title="View & Edit Profile"
+              >
+                {user?.avatar ? (
+                  <img
+                    src={user.avatar}
+                    alt={user?.name || "Profile"}
+                    className="h-7 w-7 rounded-full object-cover ring-1 ring-cyan-400/40 group-hover:scale-105 transition"
+                  />
+                ) : (
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-tr from-cyan-500 to-teal-400 text-[11px] font-black text-ink-950 group-hover:scale-105 transition">
+                    {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
+                  </div>
+                )}
 
-              <div className="hidden flex-col md:flex">
-                <span className="max-w-[110px] truncate text-xs font-semibold text-slate-800 dark:text-white leading-tight">
-                  {user?.name}
-                </span>
+                <div className="hidden flex-col md:flex">
+                  <span className="max-w-[110px] truncate text-xs font-semibold text-slate-800 dark:text-white leading-tight group-hover:text-cyan-600 dark:group-hover:text-cyan-300 transition">
+                    {user?.name}
+                  </span>
 
-                <span className="text-[10px] capitalize leading-none text-cyan-600 dark:text-cyan-300">
-                  {user?.role}
-                </span>
-              </div>
+                  <span className="text-[10px] capitalize leading-none text-cyan-600 dark:text-cyan-300">
+                    {user?.role}
+                  </span>
+                </div>
+              </button>
 
               <button
                 type="button"
@@ -220,6 +239,9 @@ export default function Navbar() {
                     message: "You have been logged out successfully.",
                     type: "info",
                   });
+                  if (activePage === "profile") {
+                    setActivePage("home");
+                  }
                 }}
                 title="Log Out"
                 className="ml-1 rounded-full p-1 text-slate-500 transition hover:bg-slate-200 hover:text-rose-600 dark:text-ink-400 dark:hover:bg-white/10 dark:hover:text-rose-400"

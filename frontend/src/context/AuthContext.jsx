@@ -108,6 +108,55 @@ export function AuthProvider({ children }) {
     throw new Error("Invalid response from demo login server");
   }, [handleAuthSuccess]);
 
+  const updateUser = useCallback((updatedUserData) => {
+    setUser(updatedUserData);
+    localStorage.setItem("thalassa_user", JSON.stringify(updatedUserData));
+  }, []);
+
+  const updateProfile = useCallback(async (profileData) => {
+    const { data } = await api.put("/auth/profile", profileData);
+    if (data?.user) {
+      updateUser(data.user);
+      return data;
+    }
+    throw new Error("Invalid response from server");
+  }, [updateUser]);
+
+  const updatePassword = useCallback(async (passwords) => {
+    const { data } = await api.put("/auth/password", passwords);
+    return data;
+  }, []);
+
+  const uploadAvatar = useCallback(async (fileOrFormData) => {
+    let payload = fileOrFormData;
+    let headers = {};
+
+    if (fileOrFormData instanceof File) {
+      const formData = new FormData();
+      formData.append("avatar", fileOrFormData);
+      payload = formData;
+      headers = { "Content-Type": "multipart/form-data" };
+    } else if (fileOrFormData instanceof FormData) {
+      headers = { "Content-Type": "multipart/form-data" };
+    }
+
+    const { data } = await api.post("/auth/avatar", payload, { headers });
+    if (data?.user) {
+      updateUser(data.user);
+      return data;
+    }
+    throw new Error("Invalid response from server");
+  }, [updateUser]);
+
+  const removeAvatar = useCallback(async () => {
+    const { data } = await api.delete("/auth/avatar");
+    if (data?.user) {
+      updateUser(data.user);
+      return data;
+    }
+    throw new Error("Invalid response from server");
+  }, [updateUser]);
+
   const logout = useCallback(() => {
     localStorage.removeItem("thalassa_token");
     localStorage.removeItem("thalassa_user");
@@ -132,6 +181,11 @@ export function AuthProvider({ children }) {
       signup,
       demoLogin,
       logout,
+      updateUser,
+      updateProfile,
+      updatePassword,
+      uploadAvatar,
+      removeAvatar,
     }),
     [
       user,
@@ -147,6 +201,11 @@ export function AuthProvider({ children }) {
       signup,
       demoLogin,
       logout,
+      updateUser,
+      updateProfile,
+      updatePassword,
+      uploadAvatar,
+      removeAvatar,
     ]
   );
 

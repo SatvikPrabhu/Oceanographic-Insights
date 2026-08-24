@@ -43,6 +43,37 @@ const ednaUpload = multer({
   fileFilter: csvOrFasta,
 });
 
+const avatarsDir = path.join(uploadsDir, "avatars");
+if (!fs.existsSync(avatarsDir)) {
+  fs.mkdirSync(avatarsDir, { recursive: true });
+}
+
+const avatarDiskStorage = multer.diskStorage({
+  destination: function (_req, _file, cb) {
+    cb(null, avatarsDir);
+  },
+  filename: function (req, file, cb) {
+    const ext = path.extname(file.originalname).toLowerCase() || ".png";
+    const uniqueName = `avatar-${req.user ? req.user._id : Date.now()}-${Date.now()}${ext}`;
+    cb(null, uniqueName);
+  },
+});
+
+function imageOnly(_req, file, cb) {
+  const allowedExts = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg"];
+  const ext = extensionOf(file.originalname);
+  if (allowedExts.includes(ext) || file.mimetype.startsWith("image/")) {
+    return cb(null, true);
+  }
+  cb(new HttpError("Only image files (.jpg, .jpeg, .png, .webp, .gif, .svg) are allowed", 400));
+}
+
+const avatarUpload = multer({
+  storage: avatarDiskStorage,
+  limits: { fileSize: 5 * 1024 * 1024, files: 1 }, // 5MB limit
+  fileFilter: imageOnly,
+});
+
 function requireFile(req, _res, next) {
   if (!req.file) {
     return next(new HttpError("No file uploaded. Use multipart field name \"file\".", 400));
@@ -50,8 +81,18 @@ function requireFile(req, _res, next) {
   next();
 }
 
+function requireAvatarFile(req, _res, next) {
+  if (!req.file && !req.body.avatar) {
+    return next(new HttpError("No avatar file or image data provided", 400));
+  }
+  next();
+}
+
 module.exports = {
   csvUpload,
   ednaUpload,
+  avatarUpload,
   requireFile,
+  requireAvatarFile,
 };
+

@@ -1,3 +1,5 @@
+const fs = require("fs");
+const path = require("path");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const { JWT_SECRET } = require("../middleware/auth");
@@ -120,6 +122,193 @@ async function getMe(req, res) {
 }
 
 /**
+ * @desc    Update user profile (name, email)
+ * @route   PUT /api/auth/profile
+ * @access  Private (Bearer token)
+ */
+async function updateProfile(req, res, next) {
+  try {
+    const { name, email } = req.body;
+
+    if (!name || !name.trim()) {
+      return res.status(400).json({
+        error: "Name cannot be empty",
+      });
+    }
+
+    if (!email || !email.trim()) {
+      return res.status(400).json({
+        error: "Email cannot be empty",
+      });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(normalizedEmail)) {
+      return res.status(400).json({
+        error: "Please provide a valid email address",
+      });
+    }
+
+    // Check if email changed and is already taken
+    if (normalizedEmail !== req.user.email) {
+      const existingUser = await User.findOne({
+        email: normalizedEmail,
+        _id: { $ne: req.user._id },
+      });
+      if (existingUser) {
+        return res.status(400).json({
+          error: "An account with this email address already exists",
+        });
+      }
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    user.name = name.trim();
+    user.email = normalizedEmail;
+    await user.save();
+
+    res.status(200).json({
+      message: "Profile updated successfully",
+      user: user.toJSON(),
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * @desc    Update user password
+ * @route   PUT /api/auth/password
+ * @access  Private (Bearer token)
+ */
+async function updatePassword(req, res, next) {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        error: "Please provide both current and new password",
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        error: "New password must be at least 6 characters long",
+      });
+    }
+
+    const user = await User.findById(req.user._id).select("+password");
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const isMatch = await user.matchPassword(currentPassword);
+    if (!isMatch) {
+      return res.status(400).json({
+        error: "Current password does not match",
+      });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.status(200).json({
+      message: "Password changed successfully",
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * @desc    Upload or set user profile picture (avatar)
+ * @route   POST /api/auth/avatar
+ * @access  Private (Bearer token)
+ */
+async function uploadAvatar(req, res, next) {
+  try {
+    let avatarUrl = "";
+
+    if (req.file) {
+      avatarUrl = `/uploads/avatars/${req.file.filename}`;
+    } else if (req.body.avatar && typeof req.body.avatar === "string") {
+      avatarUrl = req.body.avatar.trim();
+    }
+
+    if (!avatarUrl) {
+      return res.status(400).json({
+        error: "Please provide an image file or avatar URL",
+      });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Clean up previous avatar if it was stored locally
+    if (user.avatar && user.avatar.startsWith("/uploads/avatars/")) {
+      const oldPath = path.join(__dirname, "..", user.avatar.replace(/^\//, ""));
+      if (fs.existsSync(oldPath)) {
+        fs.unlink(oldPath, (err) => {
+          if (err) console.warn("Failed to delete old avatar file:", err.message);
+        });
+      }
+    }
+
+    user.avatar = avatarUrl;
+    await user.save();
+
+    res.status(200).json({
+      message: "Profile picture updated successfully",
+      user: user.toJSON(),
+      avatar: avatarUrl,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * @desc    Remove user profile picture (avatar)
+ * @route   DELETE /api/auth/avatar
+ * @access  Private (Bearer token)
+ */
+async function removeAvatar(req, res, next) {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Clean up local avatar file if exists
+    if (user.avatar && user.avatar.startsWith("/uploads/avatars/")) {
+      const oldPath = path.join(__dirname, "..", user.avatar.replace(/^\//, ""));
+      if (fs.existsSync(oldPath)) {
+        fs.unlink(oldPath, (err) => {
+          if (err) console.warn("Failed to delete old avatar file:", err.message);
+        });
+      }
+    }
+
+    user.avatar = "";
+    await user.save();
+
+    res.status(200).json({
+      message: "Profile picture removed successfully",
+      user: user.toJSON(),
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
  * @desc    Quick one-click demo login for rapid testing
  * @route   POST /api/auth/demo
  * @access  Public
@@ -168,5 +357,10 @@ module.exports = {
   signup,
   login,
   getMe,
+  updateProfile,
+  updatePassword,
+  uploadAvatar,
+  removeAvatar,
   demoLogin,
 };
+

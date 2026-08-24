@@ -206,18 +206,33 @@ export default function HomePage() {
 
             {/* Auth Profile / Sign In */}
             {isAuthenticated ? (
-              <div className="flex items-center gap-2 rounded-full border border-blue-400/20 bg-white/20 dark:bg-black/20 py-1 pl-1.5 pr-2 backdrop-blur-md">
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-500 border border-white/20 text-[11px] font-bold text-white">
-                  {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
-                </div>
-                <div className="hidden flex-col md:flex">
-                  <span className="max-w-[110px] truncate text-xs font-semibold text-blue-950 dark:text-blue-50 leading-tight">
-                    {user?.name}
-                  </span>
-                  <span className="text-[10px] capitalize leading-none text-blue-700 dark:text-blue-300 font-medium">
-                    {user?.role}
-                  </span>
-                </div>
+              <div className="flex items-center gap-1 rounded-full border border-blue-400/20 bg-white/20 dark:bg-black/20 py-1 pl-1.5 pr-2 backdrop-blur-md hover:border-blue-400/50 transition">
+                <button
+                  type="button"
+                  onClick={() => setActivePage("profile")}
+                  className="flex items-center gap-2 group text-left cursor-pointer focus:outline-none"
+                  title="View & Edit Profile"
+                >
+                  {user?.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={user?.name || "Profile"}
+                      className="h-7 w-7 rounded-full object-cover ring-1 ring-blue-400/40 group-hover:scale-105 transition"
+                    />
+                  ) : (
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-500 border border-white/20 text-[11px] font-bold text-white group-hover:scale-105 transition">
+                      {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
+                    </div>
+                  )}
+                  <div className="hidden flex-col md:flex">
+                    <span className="max-w-[110px] truncate text-xs font-semibold text-blue-950 dark:text-blue-50 leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-300 transition">
+                      {user?.name}
+                    </span>
+                    <span className="text-[10px] capitalize leading-none text-blue-700 dark:text-blue-300 font-medium">
+                      {user?.role}
+                    </span>
+                  </div>
+                </button>
                 <button
                   type="button"
                   onClick={() => {
