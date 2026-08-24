@@ -1,83 +1,118 @@
-import { Fragment, useEffect, useState } from "react";
-import { CircleMarker, useMap } from "react-leaflet";
+import { useEffect } from "react";
+import { useMap } from "react-leaflet";
+import L from "leaflet";
 import { temperatureColor, toLatLng } from "../../lib/geo";
 
 export default function HeatmapLayer({ points, onSelect }) {
   const map = useMap();
-  const [zoom, setZoom] = useState(map.getZoom());
 
   useEffect(() => {
-    const onZoom = () => setZoom(map.getZoom());
-    map.on('zoomend', onZoom);
-    return () => map.off('zoomend', onZoom);
-  }, [map]);
+    if (!points || !points.length) return;
 
-  // Zoom 3-6: radius 30 (low intensity)
-  // Zoom 7-10: radius 15
-  // Zoom 11+: distinct grid points (radius 6)
-  
-  let radius = 30;
-  let opacity = 0.4;
-  
-  if (zoom >= 11) {
-    radius = 6;
-    opacity = 0.9;
-  } else if (zoom >= 7) {
-    radius = 15;
-    opacity = 0.6;
-  }
+    let currentZoom = map.getZoom();
 
-  return points.map((point) => {
-    const loc = toLatLng(point);
-    if (!loc) return null;
-    const color = temperatureColor(point.surfaceTemperature);
-    const select = () => onSelect({ origin: loc, source: "ocean", record: point });
+    const getStyleOptions = (zoom, color) => {
+      let radius = 30;
+      let opacity = 0.4;
+      if (zoom >= 11) {
+        radius = 6;
+        opacity = 0.9;
+      } else if (zoom >= 7) {
+        radius = 15;
+        opacity = 0.6;
+      }
+      return { radius, opacity, color };
+    };
 
-    if (zoom >= 11) {
-      return (
-        <CircleMarker
-          key={point._id}
-          center={[loc.lat, loc.lng]}
-          radius={radius}
-          pathOptions={{
-            color: "#ecfeff",
-            fillColor: color,
-            fillOpacity: opacity,
-            weight: 1.5,
-            opacity: 0.9,
-          }}
-          eventHandlers={{ click: select }}
-        />
-      );
-    }
+    const layerGroup = L.layerGroup();
+    map.addLayer(layerGroup);
 
-    return (
-      <Fragment key={point._id}>
-        <CircleMarker
-          center={[loc.lat, loc.lng]}
-          radius={radius}
-          pathOptions={{
-            color,
-            fillColor: color,
-            fillOpacity: opacity * 0.4,
-            weight: 0,
-            opacity: 0,
-          }}
-          eventHandlers={{ click: select }}
-        />
-        <CircleMarker
-          center={[loc.lat, loc.lng]}
-          radius={radius * 0.45}
-          pathOptions={{
-            color,
-            fillColor: color,
-            fillOpacity: opacity,
-            weight: 0,
-            opacity: 0,
-          }}
-          eventHandlers={{ click: select }}
-        />
-      </Fragment>
-    );
-  });
+    const geoJsonData = {
+      type: "FeatureCollection",
+      features: points.map(pt => {
+        const loc = toLatLng(pt);
+        return loc ? {
+          type: "Feature",
+          geometry: { type: "Point", coordinates: [loc.lng, loc.lat] },
+          properties: { record: pt, color: temperatureColor(pt.surfaceTemperature) }
+        } : null;
+      }).filter(Boolean)
+    };
+
+    let geoJsonLayer;
+
+    const renderLayer = (zoom) => {
+      if (geoJsonLayer) {
+        layerGroup.removeLayer(geoJsonLayer);
+      }
+
+      geoJsonLayer = L.geoJSON(geoJsonData, {
+        pointToLayer: (feature, latlng) => {
+          const { color, record } = feature.properties;
+          const { radius, opacity } = getStyleOptions(zoom, color);
+          
+          if (zoom >= 11) {
+            const marker = L.circleMarker(latlng, {
+              color: "#ecfeff",
+              fillColor: color,
+              fillOpacity: opacity,
+              weight: 1.5,
+              opacity: 0.9,
+              radius
+            });
+            marker.on('click', () => onSelect({ origin: { lat: latlng.lat, lng: latlng.lng }, source: "ocean", record }));
+            return marker;
+          } else {
+            // Use a LayerGroup for the multi-circle heatmap effect
+            const group = L.layerGroup();
+            
+            const outer = L.circleMarker(latlng, {
+              color,
+              fillColor: color,
+              fillOpacity: opacity * 0.4,
+              weight: 0,
+              opacity: 0,
+              radius
+            });
+            outer.on('click', () => onSelect({ origin: { lat: latlng.lat, lng: latlng.lng }, source: "ocean", record }));
+            
+            const inner = L.circleMarker(latlng, {
+              color,
+              fillColor: color,
+              fillOpacity: opacity,
+              weight: 0,
+              opacity: 0,
+              radius: radius * 0.45
+            });
+            inner.on('click', () => onSelect({ origin: { lat: latlng.lat, lng: latlng.lng }, source: "ocean", record }));
+            
+            group.addLayer(outer);
+            group.addLayer(inner);
+            return group;
+          }
+        }
+      });
+      
+      layerGroup.addLayer(geoJsonLayer);
+    };
+
+    renderLayer(currentZoom);
+
+    const onZoomEnd = () => {
+      const newZoom = map.getZoom();
+      if (newZoom !== currentZoom) {
+        currentZoom = newZoom;
+        renderLayer(currentZoom);
+      }
+    };
+
+    map.on('zoomend', onZoomEnd);
+
+    return () => {
+      map.off('zoomend', onZoomEnd);
+      map.removeLayer(layerGroup);
+    };
+  }, [points, map, onSelect]);
+
+  return null;
 }
