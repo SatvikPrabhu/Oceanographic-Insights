@@ -321,20 +321,25 @@ async function demoLogin(req, res, next) {
     const demoProfiles = {
       researcher: {
         name: "Dr. Maya Sharma (Research Lead)",
-        email: "demo.researcher@thalassagis.io",
+        email: "demo.researcher@posaidon.io",
         password: "DemoPassword123!",
         role: "researcher",
       },
       policymaker: {
         name: "Rohan Patel (Marine Fisheries Director)",
-        email: "demo.policymaker@thalassagis.io",
+        email: "demo.policymaker@posaidon.io",
         password: "DemoPassword123!",
         role: "policymaker",
       },
     };
 
     const profile = demoProfiles[requestedRole];
-    let user = await User.findOne({ email: profile.email });
+    let user = await User.findOne({
+      $or: [
+        { email: profile.email },
+        { email: requestedRole === "policymaker" ? "demo.policymaker@thalassagis.io" : "demo.researcher@thalassagis.io" }
+      ]
+    });
 
     if (!user) {
       user = await User.create(profile);

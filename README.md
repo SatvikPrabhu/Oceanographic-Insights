@@ -1,4 +1,4 @@
-# ThalassaGIS — AI Oceanographic & Marine Biodiversity Platform
+# posAIdon — AI Oceanographic & Marine Biodiversity Platform
 
 [![Smart India Hackathon](https://img.shields.io/badge/SIH-Problem_Statement_20-0ea5e9?style=for-the-badge&logo=target)](https://www.sih.gov.in/)
 [![React](https://img.shields.io/badge/Frontend-React_18_+_Vite-61DAFB?style=for-the-badge&logo=react)](https://react.dev/)
@@ -7,9 +7,9 @@
 [![MongoDB](https://img.shields.io/badge/Database-MongoDB_+_Redis-47A248?style=for-the-badge&logo=mongodb)](https://www.mongodb.com/)
 [![Docker](https://img.shields.io/badge/Deploy-Docker_Compose-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com/)
 
-**ThalassaGIS** is an AI-driven, multi-modal marine intelligence platform engineered to bridge the three isolated silos of ocean data: **Physical Oceanography**, **Commercial Fisheries Telemetry**, and **Molecular Environmental DNA (eDNA) Biodiversity**.
+**posAIdon** is an AI-driven, multi-modal marine intelligence platform engineered to bridge the three isolated silos of ocean data: **Physical Oceanography**, **Commercial Fisheries Telemetry**, and **Molecular Environmental DNA (eDNA) Biodiversity**.
 
-Built specifically for **Smart India Hackathon (SIH) — Problem Statement 20**, ThalassaGIS provides marine researchers and government policymakers with real-time geospatial correlation, automated biological sequence verification, and predictive machine learning models across the **Arabian Sea & Indian Ocean**.
+Built specifically for **Smart India Hackathon (SIH) — Problem Statement 20**, posAIdon provides marine researchers and government policymakers with real-time geospatial correlation, automated biological sequence verification, and predictive machine learning models across the **Arabian Sea & Indian Ocean**.
 
 ---
 
@@ -42,7 +42,7 @@ Traditional marine research is severely bottlenecked by **data fragmentation**. 
 
 Because there was no unified framework to correlate these dimensions in space and time, scientists struggled to understand how rising sea temperatures impact specific fish species, and regulators had to set fishing quotas using delayed, incomplete data.
 
-**ThalassaGIS solves this by:**
+**posAIdon solves this by:**
 1. **Unifying Multimodal Datasets**: Ingesting and spatio-temporally indexing ocean physics, fisheries telemetry, and eDNA barcodes into one high-performance GIS interface.
 2. **AI Climate Impact Forecasting**: Employing machine learning to model how Sea Surface Temperature (SST) warming shifts commercial catch yields and species migration.
 3. **Genomic Validation Pipeline**: Automatically parsing FASTA sequence files and matching 16S rRNA, COI, and 18S genetic markers against regional marine biodiversity baselines.
@@ -64,7 +64,7 @@ Because there was no unified framework to correlate these dimensions in space an
              └──────────────────────┬──────┴─────────────────────────────┘
                                     │
                          ┌──────────▼──────────┐
-                         │     ThalassaGIS     │
+                         │      posAIdon       │
                          │ Unified AI Platform │
                          └─────────────────────┘
 ```
@@ -98,7 +98,7 @@ Because there was no unified framework to correlate these dimensions in space an
 - **Live System Telemetry Bar**: Real-time metrics tracking total logged sensor readings, commercial biomass harvested, matched genetic barcodes, and database health.
 
 ### 5. Dual Persona System
-ThalassaGIS tailors its analytics and visual representations to the user's role:
+posAIdon tailors its analytics and visual representations to the user's role:
 - **🔬 Marine Researcher Mode**: Deep raw sensor telemetry, molecular gene marker details, sequence alignments, and custom spatial coordinate boundaries.
 - **🏛️ Policy Maker Mode**: High-level sustainability indicators, regional heatwave warnings, catch decline alerts, and ecological quota recommendations.
 

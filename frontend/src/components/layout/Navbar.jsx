@@ -117,7 +117,7 @@ export default function Navbar() {
 
           <div className="min-w-0">
             <p className="truncate text-sm font-bold tracking-tight text-slate-900 dark:text-white">
-              PosAIdon
+              pos<span className="text-cyan-600 dark:text-cyan-400">AI</span>don
             </p>
 
             <p className="flex items-center gap-1 text-[11px] uppercase tracking-[0.16em] text-cyan-700 dark:text-cyan-200/70">

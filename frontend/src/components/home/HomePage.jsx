@@ -162,7 +162,7 @@ export default function HomePage() {
             </div>
             <div className="flex flex-col">
               <span className="text-sm sm:text-base font-bold tracking-wide text-blue-950 dark:text-blue-50">
-                POSEIDON
+                POS<span className="text-cyan-500 dark:text-cyan-400">AI</span>DON
               </span>
               <span className="text-[10px] uppercase tracking-widest text-blue-700 dark:text-blue-300 font-semibold">
                 {viewMode === "researcher" ? "Marine Researcher" : "Policy Maker"}
@@ -278,7 +278,7 @@ export default function HomePage() {
             variants={fadeRiseVariants}
             className="text-4xl sm:text-6xl font-light tracking-[0.1em] uppercase text-blue-950 dark:text-blue-50 drop-shadow-[0_0_15px_rgba(59,130,246,0.3)] dark:drop-shadow-[0_0_25px_rgba(59,130,246,0.5)]"
           >
-            Poseidon
+            POS<span className="text-cyan-500 dark:text-cyan-400 font-medium drop-shadow-[0_0_15px_rgba(6,182,212,0.8)]">AI</span>DON
           </motion.h1>
 
           <motion.p variants={fadeRiseVariants} className="mx-auto max-w-3xl text-base sm:text-lg font-light tracking-wide text-blue-900 dark:text-blue-200 drop-shadow-sm">

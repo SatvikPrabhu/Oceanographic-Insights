@@ -4,7 +4,7 @@ const ThemeContext = createContext(null);
 
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(() => {
-    const saved = localStorage.getItem("thalassa_theme");
+    const saved = localStorage.getItem("posaidon_theme") || localStorage.getItem("thalassa_theme");
     if (saved === "light" || saved === "dark") return saved;
     return "dark"; // Default to dark oceanographic theme
   });
@@ -18,7 +18,7 @@ export function ThemeProvider({ children }) {
       root.classList.remove("dark");
       root.classList.add("light");
     }
-    localStorage.setItem("thalassa_theme", theme);
+    localStorage.setItem("posaidon_theme", theme);
   }, [theme]);
 
   const toggleTheme = useCallback(() => {

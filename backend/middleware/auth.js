@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
-const JWT_SECRET = process.env.JWT_SECRET || "thalassagis_super_secure_jwt_secret_key_2026";
+const JWT_SECRET = process.env.JWT_SECRET || "posaidon_super_secure_jwt_secret_key_2026";
 
 /**
  * Protect routes - Verifies JWT Bearer token
