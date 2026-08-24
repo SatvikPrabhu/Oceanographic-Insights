@@ -15,16 +15,23 @@ export default function MapWorkspace({
 }) {
   const { layers, setSelected, setMapQuery, selected, viewMode } = useDashboard();
 
+const formatCount = (count) => {
+  if (count == null) return "0";
+  if (count < 1000) return count.toString();
+  if (count < 1000000) return `${(count / 1000).toFixed(1)}k`;
+  return `${(count / 1000000).toFixed(1)}M`;
+};
+
   return (
     <div className="flex min-h-0 flex-1">
       <Sidebar
-        extraSpecies={extraSpecies}
-        layerCounts={{
-          ocean: summary.data?.totalOceanReadings != null ? `${Math.round(summary.data.totalOceanReadings / 1000)}k` : "0k",
-          fisheries: summary.data?.totalFishLandings != null ? `${Math.round(summary.data.totalFishLandings / 1000)}k` : "0k",
-          edna: summary.data?.totalEdnaSamples != null ? `${Math.round(summary.data.totalEdnaSamples / 1000)}k` : "0k"
-        }}
-      />
+  extraSpecies={extraSpecies}
+  layerCounts={{
+    ocean: formatCount(summary.data?.totalOceanReadings || ocean.length),
+    fisheries: formatCount(summary.data?.totalFishLandings || fisheries.length),
+    edna: formatCount(summary.data?.totalEdnaSamples || edna.length),
+  }}
+/>
       <main className="relative min-w-0 flex-1">
         {spatial.isFetching && (
           <div className="absolute right-4 top-4 z-[600] rounded-full border border-[#62c0ce] bg-[#91d8e3]/95 px-3.5 py-1 text-xs font-bold text-cyan-950 shadow-md backdrop-blur dark:border-cyan-400/30 dark:bg-ink-900/90 dark:text-cyan-100">

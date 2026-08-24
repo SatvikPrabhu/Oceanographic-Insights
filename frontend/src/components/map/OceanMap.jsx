@@ -2,7 +2,7 @@ import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import { useEffect, useMemo, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet.markercluster";
-import { DEFAULT_CENTER, DEFAULT_ZOOM, toLatLng } from "../../lib/geo";
+import { DEFAULT_CENTER, DEFAULT_ZOOM, toLatLng, boundsToQuery } from "../../lib/geo";
 import { catchIconSize, dnaDivIcon, fishDivIcon, fishClusterIcon, dnaClusterIcon } from "../../lib/mapIcons";
 import HeatmapLayer from "./HeatmapLayer.jsx";
 import WaterEffectsOverlay from "./WaterEffectsOverlay.jsx";
@@ -144,6 +144,29 @@ function MapController({ center, zoom }) {
   return null;
 }
 
+function MapBoundsHandler({ onBoundsChange }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!onBoundsChange) return;
+
+    const updateBounds = () => {
+      const query = boundsToQuery(map);
+      onBoundsChange(query);
+    };
+
+    map.on('moveend', updateBounds);
+    map.on('zoomend', updateBounds);
+
+    return () => {
+      map.off('moveend', updateBounds);
+      map.off('zoomend', updateBounds);
+    };
+  }, [map, onBoundsChange]);
+
+  return null;
+}
+
 export default function OceanMap({ ocean, fisheries, edna, layers, onSelect, onBoundsChange }) {
   const { mapCenter, mapZoom } = useDashboard();
   const oceanPoints = useMemo(() => ocean || [], [ocean]);
@@ -151,8 +174,6 @@ export default function OceanMap({ ocean, fisheries, edna, layers, onSelect, onB
   const ednaPoints = useMemo(() => edna || [], [edna]);
   const [boatEffects, setBoatEffects] = useState(true);
   const wrapRef = useRef(null);
-
-  // Disabled onBoundsChange to prevent API thrashing and full React re-renders
 
   return (
     <div
@@ -173,6 +194,7 @@ export default function OceanMap({ ocean, fisheries, edna, layers, onSelect, onB
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         />
         <MapController center={mapCenter} zoom={mapZoom} />
+        <MapBoundsHandler onBoundsChange={onBoundsChange} />
         <LeafletCursorLock enabled={boatEffects} />
         {layers.ocean && <HeatmapLayer points={oceanPoints} onSelect={onSelect} />}
         {layers.fisheries && <FisheriesLayer points={fishPoints} onSelect={onSelect} />}
